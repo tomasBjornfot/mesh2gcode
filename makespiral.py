@@ -71,6 +71,14 @@ def write_gcode(myfile, lines):
 ##########  PUBLIC FUNCTIONS ##########
 #######################################
 def make_deck_spiral(x_offset, my, mz, step, feedrate, max_height):
+    """
+    x_offset, the distance between the board center and milling patch in x direction and mm
+    my, jagged matrix from golang code
+    mz,jagged matrix from golang code
+    step, the inclination step per spiral
+    feedrate, the feedrate
+    max_height, the max height (normally BlockThickness/2)
+    """
     # gets the patch
     patch = []
     x = -x_offset*np.ones(len(my))
@@ -117,7 +125,7 @@ def make_deck_spiral(x_offset, my, mz, step, feedrate, max_height):
         for i in range(len(s[0])):
             ii = len(s[0]) - 1 - i
             deck_gcode.append([-s[0][ii], s[1][ii], s[2][ii]])
-    # head to gcode file
+    # head to gcode file           
     lines = points_to_gcode(deck_gcode, feedrate)
     write_gcode('cam/deck_spiral.gc', lines)
 def make_bottom_spirals(x_offset, my, mz, step, feedrate, max_height):

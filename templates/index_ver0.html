@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Blank Milling</title>
+    <meta charset="utf-8">
+    <script src="https://cdn.plot.ly/plotly-1.2.0.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        p {
+            font-size: 12px;
+            margin: 0px 0px 0px 20px;
+        }
+        label {
+            font-size: 14px;
+            margin: 15px 0px 0px 20px;
+        }
+        div[id="view"] {
+            padding: 20px;
+        }
+        div[id="calibrate"] {
+            background: #f5f5f0;
+            margin: 10px;
+            padding: 20px;
+            border: 1px solid black;
+            border-radius: 5px;
+        }
+        .btn[id="1"] {
+            width: 8em;
+            height: 3em;
+            margin: 10px 0px 0px 0px;
+            padding: 3px 2px;
+            font-size: 12px;
+        }
+        .btn[id="tableButton"] {
+            width: 9em;
+            height: 3em;
+            margin: 10px 0px 0px 0px;
+            padding: 3px 2px;
+            font-size: 12px;
+        }
+        
+        .btn[id="tableChange"] {
+            width: 8em;
+            height: 3em;
+            margin: 10px 0px 0px 0px;
+            padding: 3px 2px;
+            font-size: 12px;
+        }
+        
+        .btn[id="jogdist"] {
+            width: 8em;
+            height: 3em;
+            margin: 10px 0px 0px 0px;
+            padding: 3px 2px;
+            font-size: 12px;
+        }
+        .btn[id="feedrate"] {
+            width: 8em;
+            height: 3em;
+            margin: 10px 0px 0px 0px;
+            padding: 3px 2px;
+            font-size: 12px;
+        }
+        input {
+            margin: 10px 0px 0px 0px;
+        }
+        input[id="fileupload"] {
+            margin: 15px 0px 0px 18px;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container-fluid" id="view">
+        <div class="col-sm-4">
+            <!-- UPLOAD STL-->
+            <div class="well">
+                <div class="row">
+                <form class="form-horizontal" action="/stl" enctype = "multipart/form-data" method="post" >
+                    <p>Material Height:</p>
+                    <div class="radio-inline">
+                        <label><input type="radio" name="radio" value="150" checked>150 mm</label>
+                    </div>
+                    <div class="radio-inline">
+                        <label><input type="radio" name="radio" value="120">120 mm</label>
+                    </div>
+                    <div class="radio-inline">
+                      <label><input type="radio" name="radio" value="100">100 mm</label>
+                    </div>
+                    <p style="padding: 20px 0px 0px 0px">STL file:</p>
+                    <div class="col-sm-9">	
+                        <input type="file" class="form-control" name="file" accept=".STL"> 
+                    </div>
+                    <div class="col-sm-2">	
+                        <button id="1" type="submit" class="btn btn-primary" value="Submit" onclick="click_calculate()">Calculate</button>
+                    </div>
+                </form>
+                </div>
+            </div>
+            <!-- MILLING -->
+            <div class="well"   >
+                <div class="row">
+                    <div class="col-sm-3">
+                        <form action="/tostart" method="post">
+                            <button id="1" class="btn btn-primary" type="submit" onclick="click_tostart()">To start</button>
+                        </form>
+                    </div>
+                    <div class="col-sm-3">
+                        <form action="/homing" method="post">
+                            <button id="1" class="btn btn-primary" type="submit" onclick="click_home()">Homing</button>
+                        </form>
+                    </div>
+                    <div class="col-sm-3">
+                        <form action="/milldeck" method="post">
+                            <button id="1" class="btn btn-primary" type="submit" onclick="click_milldeck()">Mill Deck</button>
+                        </form>
+                    </div>
+                    <div class="col-sm-3">
+                        <form action="/millbottom" method="post">
+                            <button id="1" class="btn btn-primary" type="submit" onclick="click_millbottom()">Mill Bottom</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <!-- INFO --->
+            <div class="alert alert-info" id="server" style="padding: -20px; height: 500px">
+                <strong>Info: </strong>
+                {% for item in message %}
+                    <p> {{ item }} </p>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <!-- PLOT -->
+            <div class="row" id="plot_up"></div>
+            <div class="row" id="plot_down"></div>
+        </div>  
+    </div>
+    <script>
+    function click_home() {
+        document.getElementById('server').innerHTML = "Homing..."
+    }
+    function click_tostart() {
+        document.getElementById('server').innerHTML = "To start..."
+    }
+    function click_milldeck() {
+        document.getElementById('server').innerHTML = "Milling the surfboard deck..."
+    }
+    function click_millbottom() {
+        document.getElementById('server').innerHTML = "Milling the surfboard bottom..."
+    }
+    function myplot3d(d, _x, _y, _z) {
+        var mydiv = document.getElementById(d);
+        var data = [{ x: _x, y: _y , z: _z, 
+            name: 'Measurements', 
+            type: 'scatter3d', 
+            opacity: 1.0,
+            mode: 'lines',
+            line: {color: 'blue', width: '2'},
+            hoverinfo: 'none'
+            }];
+        var layout = {
+            title: '',
+            //width: 700,
+            height: 450,
+            showlegend: false,
+            margin: {
+                l: 50,
+                r: 50,
+                b: 50,
+                t: 50,
+                pad: 0
+            },
+            scene : {
+                aspectmode: 'data',
+                xaxis: {
+                    title: '',
+                    showgrid: false,
+                    zeroline: false,
+                    showline: false,
+                    autotick: true,
+                    ticks: '',
+                    showticklabels: false,
+                    showspikes: false
+                },
+                yaxis: {
+                    title: '',
+                    showgrid: false,
+                    zeroline: false,
+                    showline: false,
+                    autotick: true,
+                    ticks: '',
+                    showticklabels: false,
+                    showspikes: false
+                },
+                zaxis: {
+                    title: '',
+                    showgrid: false,
+                    zeroline: false,
+                    showline: false,
+                    autotick: true,
+                    ticks: '',
+                    showticklabels: false,
+                    showspikes: false
+                },
+             
+                camera : {
+                    center: {x: 0, y: 0, z: 0 }, 
+                    eye: {x: -1.25, y: 0, z: 1.25 }, 
+                    up: {x: 0, y: 0, z: 1 } 
+                }
+            
+            }
+        };
+	Plotly.newPlot(mydiv, data, layout);
+    }
+    myplot3d('plot_up', {{deck[0]}}, {{deck[1]}}, {{deck[2]}})
+    myplot3d('plot_down', {{bottom[0]}}, {{bottom[1]}}, {{bottom[2]}})
+    
+  </script>
+</body>

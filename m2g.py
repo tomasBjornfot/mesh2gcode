@@ -187,15 +187,15 @@ def calc(side):
     mz = add_handles(mz, s['HandlePosition'], s['HandleHeight'], s['HandleWidth'])
     # calculate feedrate for the "surface milling"
     dz_angle = make_angle_deviation_z_matrix(zn)
-    max_height = 50.0 + 12.5 # read from settings.json
-    dz_height = make_height_deviation_z_mat(mz, s['MaterialThickness']/2.0)
-    mf = calculate_feedrate(mx, dz_angle, dz_height, 2500, 600, 25.0, 80.0)
+    max_height = s['BlockThickness']/2.0 + s['ToolRadius']
+    dz_height = make_height_deviation_z_mat(mz, s['BlockThickness']/2.0)
+    mf = calculate_feedrate(mx, dz_angle, dz_height, 2500, 700, 25.0, 80.0)
     # make points for the gcode on the surface
     points, feed = make_milling_points(mx, my, mz, mf)
-    max_height = s['MaterialThickness']/2+s['ToolRadius']
     points, feed  = add_start_point(points, feed, s['HomingOffset'][2], 1500)
     points, feed  = add_end_point(points, feed, s['HomingOffset'][2], 1500)
     # write stuff
+    points[:, 1] -= np.min(points[:, 1])
     points_to_gcode(points, feed, 'cam/'+side+'_surface.gc')
     write_jagged_matrix(dz_angle, 'out/'+side+'_dz_angle.txt')
     write_jagged_matrix(dz_height, 'out/'+side+'_dz_height.txt')
@@ -203,23 +203,20 @@ def calc(side):
     
     # spirals
     x_offset = s['Xres']/2
-    max_height = s['MaterialThickness']/2+s['ToolRadius']
+    feed = s['FeedrateStringer']
+    step = s['StepStringer']
     if side == 'deck':
-        makespiral.make_deck_spiral(x_offset, my, mz, 5.0, 1500, max_height)
+        makespiral.make_deck_spiral(x_offset, my, mz, step, feed, max_height)
         spiral, spiral_feed = points_from_gcode('cam/deck_spiral.gc')
         
     if side == 'bottom':
-        makespiral.make_bottom_spirals(x_offset, my, mz, 5.0, 1500, max_height)
+        makespiral.make_bottom_spirals(x_offset, my, mz, step, feed, max_height)
         path1 = 'cam/bottom_spiral_head.gc'
         path2 = 'cam/bottom_spiral_tail.gc'
         merge_gcodefiles(path1, path2, 'cam/bottom_spiral.gc')
         spiral, spiral_feed = points_from_gcode('cam/bottom_spiral.gc')
 
     merge_gcodefiles('cam/'+side+'_spiral.gc', 'cam/'+side+'_surface.gc', 'cam/'+side+'.gc')
-    minuter = gcode_analyser.milling_time(spiral, spiral_feed)
-    print('mill time spiral '+side+' :', int(minuter), "min  ")
-    minuter = gcode_analyser.milling_time(points, feed)
-    print('mill time surface '+side+' :', int(minuter), "min  ")
 def calculate():
     calc('deck')
     calc('bottom')

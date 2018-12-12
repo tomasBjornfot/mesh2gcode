@@ -1,0 +1,15 @@
+{
+    "HomingOffset": [
+        -407.0, 
+        3100.0, 
+        128.5
+    ], 
+    "BlockThickness": 100.0, 
+    "ToolRadius": 12.5,
+    "Xres": 10.0, 
+    "Yres": 6.0,
+    "FeedrateStringer": 1000,
+    "HandlePosition": [0.2,0.4,0.6,0.8], 
+    "HandleWidth": [2,2,2,2], 
+    "HandleHeight": [3,3,3,3]    
+}
