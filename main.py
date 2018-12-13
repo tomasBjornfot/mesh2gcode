@@ -36,7 +36,7 @@ def _getPlotData(gcodefile=''):
             z.append(float(d.split()[3][1:]))
     return [x, y, z]
 
-def _gcode_info():
+def _gcode_info(fname):
     """
     ready for testing
     """
@@ -130,7 +130,7 @@ def tostart():
     try:
         m._moveToStartPosition()
         mess.append('At start position!')
-    except Exception, e:
+    except Exception as e:
         mess.append(str(e))
     return render_template('index_ver0.html', bottom=bottom, deck=deck, message=mess)
 
@@ -148,8 +148,8 @@ def homing():
     deck = _getPlotData('cam/deck_merge.gc')
     try:
         m.homing()
-        mess.append('At home position!');
-    except Exception, e:
+        mess.append('At home position!')
+    except Exception as e:
         mess.append(str(e))
     return render_template('index_ver0.html', bottom=bottom, deck=deck, message=mess)
 
@@ -165,8 +165,8 @@ def milldeck():
     mess = []
     try:
         m.millDeck()
-        mess.append('Milling deck done!');
-    except Exception, e:
+        mess.append('Milling deck done!')
+    except Exception as e:
         mess.append(str(e))
     return render_template('index_ver0.html', bottom=[], deck=[], message=mess)
 
@@ -182,8 +182,8 @@ def millbottom():
     mess = []
     try:
         m.millBottom()
-        mess.append('Milling bottom done');
-    except Exception, e:
+        mess.append('Milling bottom done')
+    except Exception as e:
         mess.append(str(e))
     return render_template('index_ver0.html', bottom=[], deck=[], message=mess)
 

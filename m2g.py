@@ -62,7 +62,7 @@ def merge_gcodefiles(path1, path2, path3):
             f.write(line)
 # --- from go program ---
 def read_jagged_matrix(path):
-	"""
+    """
     Reads a jagged matrix from an ASCII text file. Jagged means that each row
     can be in a different length.
     Args:
@@ -71,10 +71,10 @@ def read_jagged_matrix(path):
         None  
 	"""
     data = []
-	with open(path, 'r') as f:
-		for line in f.readlines():
-			data.append([float(d) for d in line.strip().split(' ')])
-	return data	
+    with open(path, 'r') as f:
+        for line in f.readlines():
+            data.append([float(d) for d in line.strip().split(' ')])
+    return data	
 def write_jagged_matrix(data, path):
     """
     Writes a jagged matrix to file
@@ -102,16 +102,16 @@ def points_to_gcode(points, feedrate, path):
     Returns:
         None
     """
-	lines = []
-	for i in range(len(points)):
-		line = 'G1'
-		line += ' X'+str(points[i,0])
-		line += ' Y'+str(points[i,1])
-		line += ' Z'+str(points[i,2])
-		line += ' F'+str(feedrate[i])+'\n'
-		lines.append(line)
-	with open(path, 'w') as f:
-		f.writelines(lines)
+    lines = []
+    for i in range(len(points)):
+        line = 'G1'
+        line += ' X'+str(points[i,0])
+        line += ' Y'+str(points[i,1])
+        line += ' Z'+str(points[i,2])
+        line += ' F'+str(feedrate[i])+'\n'
+        lines.append(line)
+    with open(path, 'w') as f:
+        f.writelines(lines)
 def points_from_gcode(path):
     """
     Extracts points and feedrate from a gcode file
@@ -138,8 +138,8 @@ def point_distance(points):
         np.array: The cartesian distance beetween points
         
     """
-	dist =  np.sqrt(np.sum(np.diff(points, axis=0)**2, axis=1))
-	return dist, np.sum(dist)
+    dist =  np.sqrt(np.sum(np.diff(points, axis=0)**2, axis=1))
+    return dist, np.sum(dist)
 # --- handling of handles --- #
 def add_handles(mz, handleposition, handleheight, handlewidth):
     for index in range(len(handleposition)):
@@ -316,14 +316,12 @@ def calc(side):
     step = s['StepStringer']
     if side == 'deck':
         makespiral.make_deck_spiral(x_offset, my, mz, step, feed, max_height)
-        spiral, spiral_feed = points_from_gcode('cam/deck_spiral.gc')
         
     if side == 'bottom':
         makespiral.make_bottom_spirals(x_offset, my, mz, step, feed, max_height)
         path1 = 'cam/bottom_spiral_head.gc'
         path2 = 'cam/bottom_spiral_tail.gc'
         merge_gcodefiles(path1, path2, 'cam/bottom_spiral.gc')
-        spiral, spiral_feed = points_from_gcode('cam/bottom_spiral.gc')
 
     merge_gcodefiles('cam/'+side+'_spiral.gc', 'cam/'+side+'_surface.gc', 'cam/'+side+'.gc')
 def calculate():
