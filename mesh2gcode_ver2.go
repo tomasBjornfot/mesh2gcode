@@ -23,6 +23,7 @@ type Settings struct {
 /*
  * STUCTS
  */
+// Holds the mesh data.
 type Mesh struct {
 	Triangles [][9]float64
 	Normals   [][3]float64
@@ -35,6 +36,7 @@ type Mesh struct {
 	Y_max     float64
 	Z_max     float64
 }
+// Holds the cross-section data.
 type CrossSection struct {
 	X       [][1000]float64
 	Y       [][1000]float64
@@ -42,7 +44,7 @@ type CrossSection struct {
 	No_rows int
 	No_cols [1000]int
 }
-
+// Holds the millng data including points and normals.
 type Mill struct {
 	X       [][1000]float64
 	Y       [][1000]float64
@@ -56,6 +58,7 @@ type Mill struct {
 /*
  * PRIVATE FUNCTIONS/METHODS
  */
+ // Calculates the mesh min and max values for all dimersions
 func (mesh *Mesh) calculateMeshProperties() {
 	// tar reda på max och min i varje dimension
 	mesh.X_min, mesh.Y_min, mesh.Z_min = 100000.0, 100000.0, 100000.0
@@ -89,6 +92,7 @@ func (mesh *Mesh) calculateMeshProperties() {
 		}
 	}
 }
+// Calculates the mesh profile in the x,y projection
 func (mesh *Mesh) calculateProfile(radius float64, resolution int) {
 	// räknar ut Profilen på brädan i xy planet
 
@@ -154,6 +158,7 @@ func (mesh *Mesh) calculateProfile(radius float64, resolution int) {
 		}
 	}
 }
+// Calculates the mesh normals
 func (mesh *Mesh) calculateNormals() {
 	// räknar ut normaler för trianglar
 	var v0, v1 [3]float64
@@ -169,6 +174,7 @@ func (mesh *Mesh) calculateNormals() {
 		mesh.Normals[i] = crossProduct(v0, v1)
 	}
 }
+// Calculates the cross productof two thee element vectors
 func crossProduct(v0 [3]float64, v1 [3]float64) [3]float64 {
 	var x [3]float64
 	x[0] = v0[1]*v1[2] - v0[2]*v1[1]
@@ -180,6 +186,7 @@ func crossProduct(v0 [3]float64, v1 [3]float64) [3]float64 {
 	x[2] = x[2] / length
 	return x
 }
+// Calculates a linespace in the same manner as Python/Matlab
 func linspace(min float64, max float64, no_segments int) []float64 {
 	numbers := make([]float64, no_segments+1)
 	numbers[0] = min
@@ -189,6 +196,7 @@ func linspace(min float64, max float64, no_segments int) []float64 {
 	}
 	return numbers
 }
+// Extracts the points from a set of triangles
 func trianglesToPoints(mesh Mesh) [][3]float64 {
 	// tar ut trianglarna från mesh och gör en x,3 matris av punkterna
 	points := make([][3]float64, 3*mesh.No_tri)
@@ -208,6 +216,7 @@ func trianglesToPoints(mesh Mesh) [][3]float64 {
 	}
 	return points
 }
+// Calculates the  min value in an array
 func getMinValue(array []float64) int {
 	min_value := float64(1000000)
 	index := int(-1)
@@ -219,6 +228,7 @@ func getMinValue(array []float64) int {
 	}
 	return index
 }
+// Calculates the max value from an array
 func getMaxValue(array []float64) int {
 	max_value := float64(-1000000)
 	index := int(-1)
@@ -230,6 +240,7 @@ func getMaxValue(array []float64) int {
 	}
 	return index
 }
+// Gets the neasest neighbours in an array for a given value
 func getNearestNeighbours(x float64, x_array []float64) []int {
 	lower_diff := float64(100000)
 	upper_diff := float64(100000)
@@ -258,14 +269,17 @@ func getNearestNeighbours(x float64, x_array []float64) []int {
 	index[1] = upper_index
 	return index
 }
+// Calculates a line of two points in 2D
 func twoPointsToLine(x0 float64, x1 float64, y0 float64, y1 float64) (float64, float64) {
 	k := (y1 - y0) / (x1 - x0)
 	m := y0 - k*x0
 	return k, m
 }
+// Calculates the y value on a 2D line given an x value
 func yValueAt(x float64, k float64, m float64) float64 {
 	return k*x + m
 }
+// Removes duplications in an array of lenth 1000
 func unique(x [1000]float64, y [1000]float64, test_length int) ([1000]float64, [1000]float64, int){
 	// makes unique points with respect to the x value
 	// has a resolution of 2 decimals
@@ -302,6 +316,7 @@ func unique(x [1000]float64, y [1000]float64, test_length int) ([1000]float64, [
 	//fmt.Println("no_index", no_index)
 	return x_out, y_out, test_length - no_index 
 }
+// finds the indecis that sorts an array of length 1000
 func sort_index(arr [1000]float64, no_cols int) []int {
 	get_min_index := func(arr []float64) int {
 		val := 100000.0
@@ -324,6 +339,7 @@ func sort_index(arr [1000]float64, no_cols int) []int {
 	}
 	return index
 }
+// sorts an two array according to the x array
 func sort2darray(x [1000]float64, y [1000]float64, no_cols int) ([1000]float64, [1000]float64) {
 	index := sort_index(x, no_cols)
 	var x_out [1000]float64
@@ -335,11 +351,13 @@ func sort2darray(x [1000]float64, y [1000]float64, no_cols int) ([1000]float64, 
 	return x_out, y_out
 }
 // --- 2D line calculations ---
+// Calculates the distance  between two points
 func line_square_length(p0 [2]float64, p1 [2]float64) float64 {
 	dx := p0[0] - p1[0]
 	dy := p0[1] - p1[1]
 	return dx*dx + dy*dy
 }
+// Calculates the inclination of an line defined by two points
 func line_k(p0 [2]float64, p1 [2]float64) float64 {
 	dx := p1[0] - p0[0]
 	dy := p1[1] - p0[1]
@@ -349,10 +367,13 @@ func line_k(p0 [2]float64, p1 [2]float64) float64 {
 	}
 	return k
 }
+// Calculates the m value of a line defined by two points
 func line_m(p0 [2]float64, p1 [2]float64) float64 {
 	k := line_k(p0, p1)
 	return p0[1] - k*p0[0]
 }
+// Calculates next point on the same line with square distance (r2) from another 
+// point (p_left)
 func calc_next(p_left [2]float64, r2 float64, k float64, m float64) [2]float64 {
 	dx := math.Sqrt(r2/(1+k*k))
 	p_new := [2]float64 {0.0, 0.0}
@@ -360,6 +381,7 @@ func calc_next(p_left [2]float64, r2 float64, k float64, m float64) [2]float64 {
 	p_new[1] = k*p_new[0] + m
 	return p_new
 }
+// Calculates an even cartedian spaced set of points on a C0 line defined by x, y 
 func even_spaced(x [1000]float64, y [1000]float64, no_cols int, space float64) ([]float64, []float64) {
 	d2 := make([]float64, no_cols)
 	k := make([]float64, no_cols)
@@ -461,6 +483,7 @@ func even_spaced(x [1000]float64, y [1000]float64, no_cols int, space float64) (
 /*
  * PUBLIC FUNCTIONS/METHODS
  */
+ // Reads a stl file and convert it to a mesh
 func (mesh *Mesh) Read(path string, filetype int) {
 	// läser in en STL fil till mesh
 	file, err := os.Open(path)
@@ -525,6 +548,7 @@ func (mesh *Mesh) Read(path string, filetype int) {
 	}
 	mesh.calculateProfile(50.0, 100)
 }
+// Writes a mesh to an STL file
 func (mesh *Mesh) Write(path string) {
 	// skriver en mesh till binär STL fil
 	file, err := os.Create(path)
@@ -550,6 +574,7 @@ func (mesh *Mesh) Write(path string) {
 	}
 	buf.WriteTo(file)
 }
+// Moves a mesh to origin with respect to center of mass
 func (mesh *Mesh) MoveToCenter() {
 	// flyttar en mesh till centrum
 	var x_sum, y_sum, z_sum float64 = 0, 0, 0
@@ -573,6 +598,7 @@ func (mesh *Mesh) MoveToCenter() {
 	fmt.Println("MovetoCenter, translation vector: ", vector)
 	mesh.Translate(vector)
 }
+// Moves a mesh to origin with respect to min and max values
 func (mesh *Mesh) MoveToCenter2() {
 	// flyttar till centrum map högsta och minsta värde
 	var X_min, Y_min, Z_min float64 = 1000.0, 1000.0, 1000.0
@@ -610,6 +636,7 @@ func (mesh *Mesh) MoveToCenter2() {
 	fmt.Println("MovetoCenter2, translation vector: ", vector)
 	mesh.Translate(vector)
 }
+// Translates a mesh to a point in space
 func (mesh *Mesh) Translate(vector [3]float64) {
 	// translaterar en mesh i rymden
 	for i := 0; i < mesh.No_tri; i++ {
@@ -624,6 +651,7 @@ func (mesh *Mesh) Translate(vector [3]float64) {
 		}
 	}
 }
+// Rotates a mesh in space around the x, y or z axis
 func (mesh *Mesh) Rotate(axis string, angle_degrees float64) {
 	// roterar en mesh i rymden
 	ar := angle_degrees * math.Pi / 180.0
@@ -653,6 +681,7 @@ func (mesh *Mesh) Rotate(axis string, angle_degrees float64) {
 	}
 	mesh.calculateNormals()
 }
+// Aligns a mesh according to cadtype and machine
 func (mesh *Mesh) AlignMesh(cadtype string) {
 	// gör en alignment beroende på vilkan cad som används
 	if cadtype == "boardcad" {
@@ -662,6 +691,7 @@ func (mesh *Mesh) AlignMesh(cadtype string) {
 	}
 	mesh.calculateNormals()
 }
+// Align a mesh by rotation about X axis to minimize the height (z)
 func (mesh *Mesh) AlignMeshX() {
 	// roterar brädan runt x vectorn tills man hittar ett minimum Z_max - Z_min
 	mesh.calculateMeshProperties()
@@ -679,6 +709,7 @@ func (mesh *Mesh) AlignMeshX() {
 	}
 	mesh = rmesh
 }
+// Split the mesh to a deck and bottom mesh
 func (mesh *Mesh) Split() (*Mesh, *Mesh) {
 	// delar upp deck och bottom på brädan
 	// flytta funktionen
@@ -720,6 +751,7 @@ func (mesh *Mesh) Split() (*Mesh, *Mesh) {
 	bottom.calculateProfile(50.0, 100)
 	return deck, bottom
 }
+// Calculates the y-values for the "to be" cross-sections from the mesh
 func (mesh *Mesh) CalculateCS_Y_Values(max_distance float64, resolution float64) []float64 {
 	// Räknar ut y värden som ska navändas som cross sections
 	// hämtar profilen
@@ -780,6 +812,7 @@ func (mesh *Mesh) CalculateCS_Y_Values(max_distance float64, resolution float64)
 	}
 	return cs_x_final
 }
+// Calculates the cross-sections of the mesh. Only used in CalculateCrossSections
 func (crossSection *CrossSection) MeshToCs(cs []float64, mesh *Mesh) {
 	// return variabler
 	x := make([][1000]float64, len(cs))
@@ -868,12 +901,14 @@ func (crossSection *CrossSection) MeshToCs(cs []float64, mesh *Mesh) {
 	}
 	crossSection.Y = y
 }
+// Calculates the cross-section
 func (mesh *Mesh) CalculateCrossSections(y_res float64, m_res float64) *CrossSection {
 	cs := mesh.CalculateCS_Y_Values(y_res, m_res)
 	cs_mesh := new(CrossSection)
     cs_mesh.MeshToCs(cs, mesh)
     return cs_mesh
 }
+// Calculates the mill normals
 func (mill *Mill) CalculateMillNormals() {
 	// bekrivning!
 	nx := make([][1000]float64, mill.No_rows)
@@ -935,6 +970,7 @@ func (mill *Mill) CalculateMillNormals() {
 	mill.Yn = ny
 	mill.Zn = nz
 }
+// Calculates the mill coordinates/points
 func (mill *Mill) CalculateMillCoordinates(cs *CrossSection, settings *Settings) {
 	
 	mill.X = make([][1000]float64, cs.No_rows)
