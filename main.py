@@ -19,6 +19,13 @@ app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 
 # ----------- DEVELOPEMENT ----------- #
 def _getPlotData(gcodefile=''):
+    """
+    Reads the gcode data from file. Use this function to update the plot in webform.
+    Args:
+        gcodefile (string): Optional. The path to the gcode file
+    Returns:
+        list: The points in the gcode file
+    """
     x = []; y = []; z = []
     if gcodefile:
         with open(gcodefile, 'r') as f:
@@ -29,21 +36,55 @@ def _getPlotData(gcodefile=''):
             z.append(float(d.split()[3][1:]))
     return [x, y, z]
 
+def _gcode_info():
+    """
+    ready for testing
+    """
+    mess = ['file: '+fname]
+    p_bottom, f_bottom = gan.data_from_gcode('cam/bottom.gc')
+    p_deck, f_deck = gan.data_from_gcode('cam/deck.gc')
+    time_bottom = str(int(gan.milling_time(p_bottom, f_bottom)))
+    time_deck = str(int(gan.milling_time(p_deck, f_deck)))
+    w = 2*int(np.max([p_bottom[:, 0], p_deck[:, 0]]))
+    l = int(np.max([p_bottom[:, 1], p_deck[:, 0]]))
+    h = 2*int(np.max([p_bottom[:, 2], p_deck[:, 2]]))
+
+    mess.append('Milling time: '+time_bottom + '/' + time_deck+' minutes')
+    mess.append('Width: '+str(w)+' mm')
+    mess.append('Length: '+str(l)+' mm')
+    mess.append('Height: '+str(h)+' mm')
+    return mess
 """
 =============================
 ====  PUBLIC FUNCTIONS  ====
 =============================
 """
 
-dev_message = ''
-plotfile = ''
+dev_message = '' # Why is this value defined here? Remove?
+plotfile = '' # Only exist here! Remove?
 
 @app.route('/', methods = ['GET','POST'])
-def development():
+def index():
+    """
+    Gets the template.
+    Args:
+        None
+    Returns:
+        ? : The HTML of the template. 
+    """
     return render_template('index_ver0.html', bottom=[], deck=[], message=[])
 
 @app.route('/stl', methods = ['GET', 'POST'])
 def stl():
+    """
+    The function is triggered when the calculate button is pushed in the HTML.
+    It calculates the gcode files for an stl file. It also gives the
+    properties of the gcode, i.e. milling time and size
+    Args:
+        None
+    Returns:
+        ? : The HTML of the template
+    """
     if request.method == 'POST':
         f = request.files['file']
         fname = secure_filename(f.filename)
@@ -61,61 +102,90 @@ def stl():
         bottom = _getPlotData('cam/bottom.gc')
         deck = _getPlotData('cam/deck.gc')
         time.sleep(0.1)
-        # info
-        dev_message = ['file: '+fname]
+        # The message in the info canvas
+        mess = ['file: '+fname]
         p_bottom, f_bottom = gan.data_from_gcode('cam/bottom.gc')
         p_deck, f_deck = gan.data_from_gcode('cam/deck.gc')
         time_bottom = str(int(gan.milling_time(p_bottom, f_bottom)))
         time_deck = str(int(gan.milling_time(p_deck, f_deck)))
-        dev_message.append('Milling time: '+time_bottom + '/' + time_deck+' minutes')
-        dev_message.append('Width: '+str(2*int(np.max(p_bottom[:, 0])))+' mm')
-        dev_message.append('Length: '+str(int(np.max(p_bottom[:, 1])))+' mm')
-        dev_message.append('Height: '+str(2*int(np.max(p_bottom[:, 2])))+' mm')
-        return render_template('index_ver0.html', bottom=bottom, deck=deck, message=dev_message)
+        mess.append('Milling time: '+time_bottom + '/' + time_deck+' minutes')
+        mess.append('Width: '+str(2*int(np.max(p_bottom[:, 0])))+' mm')
+        mess.append('Length: '+str(int(np.max(p_bottom[:, 1])))+' mm')
+        mess.append('Height: '+str(2*int(np.max(p_bottom[:, 2])))+' mm')
+        return render_template('index_ver0.html', bottom=bottom, deck=deck, message=mess)
 
 @app.route('/tostart', methods = ['GET','POST'])
 def tostart():
-    dev_message = []
+    """
+    Moves the milling machine to the start point. This function
+    shall not be used in the final relese.
+    Args:
+        None
+    Returns:
+        ? : The HTML of the template
+    """
+    mess = []
     bottom = _getPlotData('cam/bottom.gc')
     deck = _getPlotData('cam/deck.gc')
     try:
         m._moveToStartPosition()
-        dev_message.append('At start position!')
+        mess.append('At start position!')
     except Exception, e:
-        dev_message.append(str(e))
-    return render_template('index_ver0.html', bottom=bottom, deck=deck, message=dev_message)
+        mess.append(str(e))
+    return render_template('index_ver0.html', bottom=bottom, deck=deck, message=mess)
 
 @app.route('/homing', methods = ['GET','POST'])
 def homing():
-    dev_message = []
+    """
+    Makes a homing of the machine
+    Args:
+        None
+    Returns:
+        ? : The HTML of the template
+    """
+    mess = []
     bottom = _getPlotData('cam/bottom_merge.gc')
     deck = _getPlotData('cam/deck_merge.gc')
     try:
         m.homing()
-        dev_message.append('At home position!');
+        mess.append('At home position!');
     except Exception, e:
-        dev_message.append(str(e))
-    return render_template('index_ver0.html', bottom=bottom, deck=deck, message=dev_message)
+        mess.append(str(e))
+    return render_template('index_ver0.html', bottom=bottom, deck=deck, message=mess)
 
 @app.route('/milldeck', methods = ['GET','POST'])
 def milldeck():
-    dev_message = []
+    """
+    Performs a milling of the deck of the blank.
+    Args:
+        None
+    Returns:
+        ? : The HTML of the template
+    """
+    mess = []
     try:
         m.millDeck()
-        dev_message.append('Milling deck done!');
+        mess.append('Milling deck done!');
     except Exception, e:
-        dev_message.append(str(e))
-    return render_template('index_ver0.html', bottom=[], deck=[], message=dev_message)
+        mess.append(str(e))
+    return render_template('index_ver0.html', bottom=[], deck=[], message=mess)
 
 @app.route('/millbottom', methods = ['GET','POST'])
 def millbottom():
-    dev_message = []
+    """
+    Performs a milling of the bottom of the blank.
+    Args:
+        None
+    Returns:
+        ? : The HTML of the template
+    """
+    mess = []
     try:
         m.millBottom()
-        dev_message.append('Milling bottom done');
+        mess.append('Milling bottom done');
     except Exception, e:
-        dev_message.append(str(e))
-    return render_template('index_ver0.html', bottom=[], deck=[], message=dev_message)
+        mess.append(str(e))
+    return render_template('index_ver0.html', bottom=[], deck=[], message=mess)
 
 # start the server
 if __name__ == '__main__':
