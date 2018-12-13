@@ -25,7 +25,7 @@ def make_both_sided(mat):
     return np.flip(mat, axis=0)
     
 # --- MAIN --- #
-side = 'bottom'
+side = 'deck'
 # mz
 jmz = read_jagged_matrix('out/'+side+'_mz.txt')
 mz = make_both_sided(make_jagged_square(jmz, -1.0))

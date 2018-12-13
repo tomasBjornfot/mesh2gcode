@@ -70,7 +70,7 @@ def write_gcode(myfile, lines):
 #######################################
 ##########  PUBLIC FUNCTIONS ##########
 #######################################
-def make_deck_spiral(x_offset, my, mz, step, feedrate, max_height):
+def make_deck_spiral(x_offset, y_offset, my, mz, step, feedrate, max_height):
     """
     x_offset, the distance between the board center and milling patch in x direction and mm
     my, jagged matrix from golang code
@@ -125,10 +125,12 @@ def make_deck_spiral(x_offset, my, mz, step, feedrate, max_height):
         for i in range(len(s[0])):
             ii = len(s[0]) - 1 - i
             deck_gcode.append([-s[0][ii], s[1][ii], s[2][ii]])
-    # head to gcode file           
+    # moving the y-values to machine domain
+    for dc in deck_gcode:
+        dc[1] -= y_offset
     lines = points_to_gcode(deck_gcode, feedrate)
     write_gcode('cam/deck_spiral.gc', lines)
-def make_bottom_spirals(x_offset, my, mz, step, feedrate, max_height):
+def make_bottom_spirals(x_offset, y_offset, my, mz, step, feedrate, max_height):
     # gets the patch
     patch = []
     x = -x_offset*np.ones(len(my))
@@ -172,6 +174,9 @@ def make_bottom_spirals(x_offset, my, mz, step, feedrate, max_height):
         for i in range(len(h[0])):
             ii = len(h[0]) - 1 - i
             head_gcode.append([-h[0][ii], h[1][ii], h[2][ii]])
+    # moving the y-values to machine domain
+    for hc in head_gcode:
+        hc[1] -= y_offset
     # head to gcode file
     lines = points_to_gcode(head_gcode, feedrate)
     write_gcode('cam/bottom_spiral_head.gc', lines)
@@ -186,6 +191,9 @@ def make_bottom_spirals(x_offset, my, mz, step, feedrate, max_height):
         # backward on x negative side
         for i in range(len(t[0])):
             tail_gcode.append([-t[0][i], t[1][i], t[2][i]])
+    # moving the y-values to machine domain
+    for tc in tail_gcode:
+        tc[1] -= y_offset
     lines = points_to_gcode(tail_gcode, feedrate)
     write_gcode('cam/bottom_spiral_tail.gc', lines)
 

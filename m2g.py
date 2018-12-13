@@ -303,8 +303,9 @@ def calc(side):
     points, feed = make_milling_points(mx, my, mz, mf)
     points, feed  = add_start_point(points, feed, s['HomingOffset'][2], 1500)
     points, feed  = add_end_point(points, feed, s['HomingOffset'][2], 1500)
+    y_offset = np.min(points[:, 1])
     # write stuff
-    points[:, 1] -= np.min(points[:, 1])
+    points[:, 1] -= y_offset
     points_to_gcode(points, feed, 'cam/'+side+'_surface.gc')
     write_jagged_matrix(dz_angle, 'out/'+side+'_dz_angle.txt')
     write_jagged_matrix(dz_height, 'out/'+side+'_dz_height.txt')
@@ -315,10 +316,10 @@ def calc(side):
     feed = s['FeedrateStringer']
     step = s['StepStringer']
     if side == 'deck':
-        makespiral.make_deck_spiral(x_offset, my, mz, step, feed, max_height)
+        makespiral.make_deck_spiral(x_offset, y_offset, my, mz, step, feed, max_height)
         
     if side == 'bottom':
-        makespiral.make_bottom_spirals(x_offset, my, mz, step, feed, max_height)
+        makespiral.make_bottom_spirals(x_offset, y_offset, my, mz, step, feed, max_height)
         path1 = 'cam/bottom_spiral_head.gc'
         path2 = 'cam/bottom_spiral_tail.gc'
         merge_gcodefiles(path1, path2, 'cam/bottom_spiral.gc')

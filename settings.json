@@ -1,17 +1,17 @@
 {
-    "ToolRadius": 12.5, 
+    "BlockThickness": 100.0, 
+    "FeedrateStringer": 1700, 
     "HandleHeight": [
         3, 
         2, 
         2, 
         3
     ], 
-    "StepStringer": 6.0, 
-    "BlockThickness": 100.0, 
-    "HomingOffset": [
-        -407.0, 
-        3100.0, 
-        128.5
+    "HandlePosition": [
+        0.15, 
+        0.4, 
+        0.6, 
+        0.85
     ], 
     "HandleWidth": [
         2, 
@@ -19,13 +19,13 @@
         1, 
         2
     ], 
+    "HomingOffset": [
+        -407.0, 
+        3100.0, 
+        128.5
+    ], 
+    "StepStringer": 6.0, 
+    "ToolRadius": 12.5, 
     "Xres": 6.0, 
-    "FeedrateStringer": 1700, 
-    "Yres": 6.0, 
-    "HandlePosition": [
-        0.2, 
-        0.4, 
-        0.6, 
-        0.8
-    ]
+    "Yres": 6.0
 }

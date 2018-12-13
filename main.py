@@ -97,21 +97,24 @@ def stl():
             data = json.loads(f.read())
         data['BlockThickness'] = block_thicknes
         with open('settings.json', 'w') as f:
-            f.write(json.dumps(data, indent=4))
+            f.write(json.dumps(data, indent=4, sort_keys=True))
         m2g.calculate()
         bottom = _getPlotData('cam/bottom.gc')
         deck = _getPlotData('cam/deck.gc')
         time.sleep(0.1)
         # The message in the info canvas
+        # TO DO: use _gcode_info instead
         mess = ['file: '+fname]
         p_bottom, f_bottom = gan.data_from_gcode('cam/bottom.gc')
         p_deck, f_deck = gan.data_from_gcode('cam/deck.gc')
+        p_bottom, f_bottom = gan.data_from_gcode('cam/bottom_surface.gc')
+        p_deck, f_deck = gan.data_from_gcode('cam/deck_surface.gc')
         time_bottom = str(int(gan.milling_time(p_bottom, f_bottom)))
         time_deck = str(int(gan.milling_time(p_deck, f_deck)))
         mess.append('Milling time: '+time_bottom + '/' + time_deck+' minutes')
         mess.append('Width: '+str(2*int(np.max(p_bottom[:, 0])))+' mm')
         mess.append('Length: '+str(int(np.max(p_bottom[:, 1])))+' mm')
-        mess.append('Height: '+str(2*int(np.max(p_bottom[:, 2])))+' mm')
+        mess.append('Height: '+str(2*int(np.max(p_bottom[1:-1, 2])))+' mm')
         return render_template('index_ver0.html', bottom=bottom, deck=deck, message=mess)
 
 @app.route('/tostart', methods = ['GET','POST'])
