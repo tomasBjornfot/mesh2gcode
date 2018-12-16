@@ -99,12 +99,14 @@ def stl():
         with open('settings.json', 'w') as f:
             f.write(json.dumps(data, indent=4, sort_keys=True))
         m2g.calculate()
-        bottom = _getPlotData('cam/bottom.gc')
-        deck = _getPlotData('cam/deck.gc')
-        time.sleep(0.1)
+        mess = ['file: '+fname]
+        # checks is gcode files produce error 202:
+        b_ok = gan.is_p2p_time_ok('cam/bottom.gc', 3.0*0.001)
+        d_ok = gan.is_p2p_time_ok('cam/deck.gc', 3.0*0.001)
         # The message in the info canvas
         # TO DO: use _gcode_info instead
-        mess = ['file: '+fname]
+        if b_ok == False or d_ok == False:
+            mess.append('Warning: files can cause error: 202')
         p_bottom, f_bottom = gan.data_from_gcode('cam/bottom.gc')
         p_deck, f_deck = gan.data_from_gcode('cam/deck.gc')
         p_bottom, f_bottom = gan.data_from_gcode('cam/bottom_surface.gc')
@@ -115,6 +117,9 @@ def stl():
         mess.append('Width: '+str(2*int(np.max(p_bottom[:, 0])))+' mm')
         mess.append('Length: '+str(int(np.max(p_bottom[:, 1])))+' mm')
         mess.append('Height: '+str(2*int(np.max(p_bottom[1:-1, 2])))+' mm')
+
+        bottom = _getPlotData('cam/bottom.gc')
+        deck = _getPlotData('cam/deck.gc')
         return render_template('index_ver0.html', bottom=bottom, deck=deck, message=mess)
 
 @app.route('/tostart', methods = ['GET','POST'])
@@ -147,8 +152,8 @@ def homing():
         ? : The HTML of the template
     """
     mess = []
-    bottom = _getPlotData('cam/bottom_merge.gc')
-    deck = _getPlotData('cam/deck_merge.gc')
+    bottom = _getPlotData('cam/bottom.gc')
+    deck = _getPlotData('cam/deck.gc')
     try:
         m.homing()
         mess.append('At home position!')

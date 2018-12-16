@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pdb
 
 def data_from_gcode(path):
     """
@@ -26,7 +27,23 @@ def milling_time(points, feedrate):
     for i in range(len(dist)):
         m += dist[i]/feedrate[i+1]
     return m
-    
+def milling_time_segment(points, feedrate):
+    """
+    calculates the time i takes to travel to the next gcode point.
+    This is important since Tinyg reports an error (202) if less
+    then MIN_SEGMENT_USEC.
+    """
+    dist = p2p_distance(points)
+    t = []
+    for i in range(len(dist)):
+        t.append(60*dist[i]/feedrate[i+1])
+    return t
+def is_p2p_time_ok(path, min_time):
+    points, feedrate = data_from_gcode(path)
+    t = milling_time_segment(points, feedrate)
+    if np.min(t) < min_time:
+        return False
+    return True
 # --- MAIN --- #
 """
 p, f = data_from_gcode('cam/merge.gc')

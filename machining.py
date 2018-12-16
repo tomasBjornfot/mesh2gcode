@@ -23,13 +23,6 @@ def _setValue(tg, config, value):
     tg.write('{"'+str(config)+'":'+str(value)+'}\n')
     time.sleep(0.1)
     return tg.readlines()
-    """
-    if _confirmingReturnMessage(tg) == True:
-        return tg.readlines()
-    else:
-        return 'Didn\'t get valid return value\n'
-    """
-
 def _setGcodeValue(tg, config):
     print('Sets: "'+str(config)+'"')
     tg.write('{"gc":"'+str(config)+'"}\n')
@@ -169,14 +162,6 @@ def _getCurrentPosition():
     y = _readValue(tg, 'posy')
     z = _readValue(tg, 'posz')
     return [x, y, z]
-    """
-    m = millControl('sr n')
-    dm = json.loads(m[0])
-    x = dm['r']['sr']['posx'] 
-    y = dm['r']['sr']['posy'] 
-    z = dm['r']['sr']['posz'] 
-    return [x, y, z]
-    """
 
 def _hasDoneHoming():
     m = _millControl('home n')
@@ -225,11 +210,12 @@ def _moveToStartPosition():
     # move to start position
     tg = _connect()
     _disableAmaxLimitSwitch(tg)
-    _move_z(tg, dz, 1500)
-    _move_x(tg, dx, 1500)
+    _move_z(tg, dz, 1000)
+    _move_x(tg, dx, 1000)
     _move_y(tg, 1200, 1500)
     _enableAmaxLimitSwitch(tg)
     _disconnect(tg)
+
 """
 =============================
 ====  PUBLIC FUNCTIONS  ====
@@ -257,7 +243,7 @@ def homing():
     _printStatusReport(tg)
     _disconnect(tg)
     
-def millDeck():
+def     millDeck():
     # reads the homing offset
     with open('settings.json') as f:
         data = json.load(f)

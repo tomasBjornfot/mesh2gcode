@@ -31,7 +31,7 @@ jmz = read_jagged_matrix('out/'+side+'_mz.txt')
 mz = make_both_sided(make_jagged_square(jmz, -1.0))
 
 # angle dev
-jdza = read_jagged_matrix('out/'+side+'_dz_angle.txt')
+jdza = read_jagged_matrix('out/'+side+'_dz_angle.txt')  
 dza = make_both_sided(make_jagged_square(jdza, -1.0))
 
 # height dev

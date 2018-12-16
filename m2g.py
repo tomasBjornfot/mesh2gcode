@@ -298,7 +298,7 @@ def calc(side):
     dz_angle = make_angle_deviation_z_matrix(zn)
     max_height = s['BlockThickness']/2.0 + s['ToolRadius']
     dz_height = make_height_deviation_z_mat(mz, s['BlockThickness']/2.0)
-    mf = calculate_feedrate(mx, dz_angle, dz_height, 2500, 700, 25.0, 80.0)
+    mf = calculate_feedrate(mx, dz_angle, dz_height, 2000, 700, 25.0, 80.0)
     # make points for the gcode on the surface
     points, feed = make_milling_points(mx, my, mz, mf)
     points, feed  = add_start_point(points, feed, s['HomingOffset'][2], 1500)

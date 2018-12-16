@@ -22,10 +22,10 @@
     "HomingOffset": [
         -407.0, 
         3100.0, 
-        128.5
+        108.5
     ], 
     "StepStringer": 6.0, 
     "ToolRadius": 12.5, 
     "Xres": 6.0, 
-    "Yres": 6.0
+    "Yres": 12.0
 }
