@@ -87,30 +87,25 @@ def _setGcodeValues(tg):
     _setGcodeValue(tg, "G54")
     _setGcodeValue(tg, "G90")
     _setGcodeValue(tg, "G21")
+    _setGcodeValue(tg, "M3 S1000")
 
 def _setGcodeMovesFromFile(tg, fname):
     tg.flush()
     with open(fname) as f:
         lines = f.readlines()
-    print(lines[0].rstrip())
-    tg.write(lines[0])
-    print(lines[1].rstrip())
-    tg.write(lines[1])
-    print(lines[2].rstrip())
-    tg.write(lines[2])
-    print(lines[3].rstrip())
-    tg.write(lines[3])
+
+    for i in range(4):
+        tg.write(lines[i])
+        print(lines[i].rstrip())
     index = 4
     len_lines = len(lines)
     while True:
         report = tg.readline()
-        if report.split('"')[1] == 'qr':
-            print(report)
+        print(report.rstrip())
         if report.split('"')[1] == 'r':
             tg.flush()
-            print(report.rstrip())
             print(lines[index].rstrip())
-            print('Adding line: ' + str(index) + ' of ' + str(len_lines) + ' ' + str(100*index/len_lines) + ' %')
+            print('Adding line: ' + str(index) + ' of ' + str(len_lines) + ' ' + str(100*index/len_lines) + '%')
             tg.write(lines[index])
             index = index + 1
             if index == len(lines) - 1:
@@ -212,7 +207,7 @@ def _moveToStartPosition():
     _disableAmaxLimitSwitch(tg)
     _move_z(tg, dz, 1000)
     _move_x(tg, dx, 1000)
-    _move_y(tg, 1200, 1500)
+    _move_y(tg, 1200, 2000)
     _enableAmaxLimitSwitch(tg)
     _disconnect(tg)
 
@@ -285,9 +280,9 @@ def millBottom():
     tg = _connect()
     # move to start position
     _disableAmaxLimitSwitch(tg)
-    _move_z(tg, dz, 1500)
-    _move_x(tg, dx, 1500)
-    _move_y(tg, 1200, 1500)
+    _move_z(tg, dz, 1000)
+    _move_x(tg, dx, 1000)
+    _move_y(tg, 1200, 2000)
     _enableAmaxLimitSwitch(tg)
     # mill deck
     _setGcodeValues(tg)
