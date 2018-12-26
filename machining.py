@@ -58,6 +58,12 @@ def _move_y(tg, y, f):
     time.sleep(0.05)
     return tg.readline()
 
+def _move_xy(tg, x, y, f):
+    tg.write('{"gc":"g1 x+'+str(x)+' y'+str(y)+' f'+str(f)+'"}\n')
+    _printStatusReport(tg)
+    time.sleep(0.05)
+    return tg.readline()
+
 def _move_z(tg, z, f):
     tg.write('{"gc":"g1 z+'+str(z)+' f'+str(f)+'"}\n')
     _printStatusReport(tg)
@@ -159,9 +165,10 @@ def _getCurrentPosition():
     return [x, y, z]
 
 def _hasDoneHoming():
-    m = _millControl('home n')
-    dm = json.loads(m[0])
-    if dm['r']['home']:
+    tg = _connect()
+    val = _readValue(tg, 'home')
+    _disconnect(tg)
+    if val==1:
         return True
     return False
 
@@ -201,14 +208,54 @@ def _moveToStartPosition():
         data = json.load(f)
     dx = data['HomingOffset'][0]
     dz = data['HomingOffset'][2]
+    frt = data['FeedrateTransport']
+    starty = data['StartPositionY']
     
     # move to start position
     tg = _connect()
     _disableAmaxLimitSwitch(tg)
-    _move_z(tg, dz, 1000)
-    _move_x(tg, dx, 1000)
-    _move_y(tg, 1200, 1500)
+    _move_z(tg, dz, frt)
+    _move_xy(tg, dx, starty, frt)
     _enableAmaxLimitSwitch(tg)
+    _disconnect(tg)
+
+def _millSide(side):
+    # reads the homing offset
+    with open('settings.json') as f:
+        data = json.load(f)
+    dx = data['HomingOffset'][0]
+    dy = data['HomingOffset'][1]
+    dz = data['HomingOffset'][2]
+    frt = data['FeedrateTransport']
+    starty = data['StartPositionY']
+    
+    tg = _connect()
+    
+    # sets correct control flow
+    _setValue(tg, 'ex', 2)
+    
+    # sets microsteps to None
+    _setValue(tg, '1mi', 1)    
+    _setValue(tg, '2mi', 1)    
+    _setValue(tg, '3mi', 1)    
+    _setValue(tg, '4mi', 1) 
+    
+    # move to start position
+    _disableAmaxLimitSwitch(tg)
+    _move_z(tg, dz, frt)
+    _move_xy(tg, 0, starty, frt)
+    _enableAmaxLimitSwitch(tg)
+    
+    # milling the side
+    _setGcodeValues(tg)
+    _setGcodeMovesFromFile(tg, 'cam/'+side+'.gc')
+    
+    # move to home position 
+    _setGcodeValue(tg,'M2')
+    _move_z(tg, dz, frt)
+    _disableAmaxLimitSwitch(tg)
+    _move_xy(tg, dx, dy, frt)
+    
     _disconnect(tg)
 
 """
@@ -238,66 +285,16 @@ def homing():
     _printStatusReport(tg)
     _disconnect(tg)
     
-def     millDeck():
-    # reads the homing offset
-    with open('settings.json') as f:
-        data = json.load(f)
-    dx = data['HomingOffset'][0]
-    dy = data['HomingOffset'][1]
-    dz = data['HomingOffset'][2]
-    
-    tg = _connect()
-    # move to start position
-    _disableAmaxLimitSwitch(tg)
-    _move_z(tg, dz, 2000)
-    _move_x(tg, dx, 2000)
-    _move_y(tg, 1200, 2000)
-    _enableAmaxLimitSwitch(tg)
-    # mill deck
-    _setGcodeValues(tg)
-    _setGcodeMovesFromFile(tg, 'cam/deck.gc')
-    _setGcodeValue(tg,'M2')
-    # move to start position
-    _move_z(tg, dz, 2000)
-    _move_x(tg, dx, 2000)
-    _move_y(tg, 1200, 2000)
-    
-    # move to home position 
-    _move_z(tg, dz, 2000)
-    _move_x(tg, dx, 2000)
-    _move_y(tg, dy, 2000)
-    
-    _disconnect(tg)
+def millDeck():
+    if _hasDoneHoming():
+        _millSide('deck')
+        return 'Milling done.'
+    return 'Homing not done.'
 
 def millBottom():
-    # reads the homing offset
-    with open('settings.json') as f:
-        data = json.load(f)
-    dx = data['HomingOffset'][0]
-    dy = data['HomingOffset'][1]
-    dz = data['HomingOffset'][2]
-    
-    tg = _connect()
-    # move to start position
-    _disableAmaxLimitSwitch(tg)
-    _move_z(tg, dz, 1000)
-    _move_x(tg, dx, 1000)
-    _move_y(tg, 1200, 2000)
-    _enableAmaxLimitSwitch(tg)
-    # mill deck
-    _setGcodeValues(tg)
-    _setGcodeMovesFromFile(tg, 'cam/bottom.gc')
-    _setGcodeValue(tg,'M2')
-    # move to start position
-    _move_z(tg, dz, 1500)
-    _move_x(tg, dx, 1500)
-    _move_y(tg, 1200, 1500)
-    
-    # move to home position 
-    _move_z(tg, dz, 1500)
-    _move_x(tg, dx, 1500)
-    _move_y(tg, dy, 1500)
-    
-    _disconnect(tg)
+    if _hasDoneHoming():
+        _millSide('bottom')
+        return 'Milling done.'
+    return 'Homing not done.'
 
 

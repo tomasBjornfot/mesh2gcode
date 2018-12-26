@@ -171,8 +171,7 @@ def milldeck():
     """
     mess = []
     try:
-        m.millDeck()
-        mess.append('Milling deck done!')
+        mess.append(m.millDeck())
     except Exception as e:
         mess.append(str(e))
     return render_template('index_ver0.html', bottom=[], deck=[], message=mess)
@@ -188,8 +187,7 @@ def millbottom():
     """
     mess = []
     try:
-        m.millBottom()
-        mess.append('Milling bottom done')
+        mess.append(m.millBottom())
     except Exception as e:
         mess.append(str(e))
     return render_template('index_ver0.html', bottom=[], deck=[], message=mess)

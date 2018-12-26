@@ -205,8 +205,8 @@ def calculate_feedrate(mx, dz_angle, dz_height, max_feed, min_feed, half_feed_a,
         list: The calculated feedrate.
     """
     fr = []
-    a_const = 1/(2*half_feed_a)
-    h_const = 1/(2*half_feed_h)
+    a_const = 1.0/(2.0*half_feed_a)
+    h_const = 1.0/(2.0*half_feed_h)
     for row in range(len(mx)):
         fr_row = []
         for col in range(len(mx[row])):
