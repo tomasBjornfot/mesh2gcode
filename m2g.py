@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import numpy as np
 import matplotlib.pyplot as plt
 import json
@@ -188,7 +187,7 @@ def make_height_deviation_z_mat(mz, mateial_height):
             dz_row.append(np.round(mateial_height - mz[row][col]))
         dz_height.append(dz_row)
     return dz_height
-def calculate_feedrate(mx, dz_angle, dz_height, max_feed, min_feed, halv_feed_a, half_feed_h):
+def calculate_feedrate(mx, dz_angle, dz_height, max_feed, min_feed, half_feed_a, half_feed_h):
     """
     Calculates feedrate for all points in jagged matrices.
     Args:
@@ -206,7 +205,7 @@ def calculate_feedrate(mx, dz_angle, dz_height, max_feed, min_feed, halv_feed_a,
         list: The calculated feedrate.
     """
     fr = []
-    a_const = 1/(2*halv_feed_a)
+    a_const = 1/(2*half_feed_a)
     h_const = 1/(2*half_feed_h)
     for row in range(len(mx)):
         fr_row = []
@@ -298,7 +297,11 @@ def calc(side):
     dz_angle = make_angle_deviation_z_matrix(zn)
     max_height = s['BlockThickness']/2.0 + s['ToolRadius']
     dz_height = make_height_deviation_z_mat(mz, s['BlockThickness']/2.0)
-    mf = calculate_feedrate(mx, dz_angle, dz_height, 2000, 700, 25.0, 80.0)
+    frmax = s['FeedrateMax']
+    frmin = s['FeedrateMin']
+    hang = s['FeedrateHalfAngle']
+    hdepth = s['FeedrateHalfDepth']
+    mf = calculate_feedrate(mx, dz_angle, dz_height, frmax, frmin, hang, hdepth)
     # make points for the gcode on the surface
     points, feed = make_milling_points(mx, my, mz, mf)
     points, feed  = add_start_point(points, feed, s['HomingOffset'][2], 1500)

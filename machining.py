@@ -207,7 +207,7 @@ def _moveToStartPosition():
     _disableAmaxLimitSwitch(tg)
     _move_z(tg, dz, 1000)
     _move_x(tg, dx, 1000)
-    _move_y(tg, 1200, 2000)
+    _move_y(tg, 1200, 1500)
     _enableAmaxLimitSwitch(tg)
     _disconnect(tg)
 

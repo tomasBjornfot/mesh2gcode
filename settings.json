@@ -1,31 +1,35 @@
 {
-    "BlockThickness": 100.0, 
-    "FeedrateStringer": 1700, 
+    "BlockThickness": 100.0,
+    "FeedrateHalfAngle": 25,
+    "FeedrateHalfDepth": 70,
+    "FeedrateMax": 1500,
+    "FeedrateMin": 700,
+    "FeedrateStringer": 1500,
     "HandleHeight": [
-        3, 
-        2, 
-        2, 
+        3,
+        2,
+        2,
         3
-    ], 
+    ],
     "HandlePosition": [
-        0.15, 
-        0.4, 
-        0.6, 
+        0.15,
+        0.4,
+        0.6,
         0.85
-    ], 
+    ],
     "HandleWidth": [
-        2, 
-        1, 
-        1, 
+        2,
+        1,
+        1,
         2
-    ], 
+    ],
     "HomingOffset": [
-        -407.0, 
-        3100.0, 
+        -407.0,
+        3100.0,
         108.5
-    ], 
-    "StepStringer": 6.0, 
-    "ToolRadius": 12.5, 
-    "Xres": 6.0, 
+    ],
+    "StepStringer": 6.0,
+    "ToolRadius": 12.5,
+    "Xres": 6.0,
     "Yres": 12.0
 }

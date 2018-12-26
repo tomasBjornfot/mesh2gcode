@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from flask import Flask, render_template, request, url_for, redirect, flash
 from werkzeug.utils import secure_filename
 import numpy as np
