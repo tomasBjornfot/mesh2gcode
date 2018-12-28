@@ -4,10 +4,14 @@ Skapa fräsfiler. En nära den rörliga infästningen och en nära den fasta inf
 Fräs båda filerna, vänd materialet och fräs samma filer på andra sidan
 Mät tjockleken på det utfrästa materialet: 
 
-Felet i höjd (z) är HeightOffset[2] minus den uppmätta tjockleken, delat i två. 
-Felet i x är halva skilladen mellan vertikala planen x och x-.
-
-Addera felet med HeightOffset[2] gör en homing, för en ny fräsnng och mät.  
+För Z gäller: 
+  Rätt kalibrering ger en tjocklek på 80 mm.
+  Om tjockleken är 84 mm ska fläsningen flyttas ner 2 mm. Sätt då HomingOffset[2] till +2 mm.
+För X gäller:
+  Felet i x är halva skilladen mellan vertikala planen x och x-.
+  Korrgera x med att ändra HomingOffset[0] +-felet. Plus eller minus beror på hur skillnaden ser ut.
+  Om det fräsen har fräst för långt bort i x-led, ska minus användas. 
+  Om fräsen har fräst för nära i x-led, ska plus användas.
 
 Parametrar i json filen:
 ToolRadius, radien på fräsverktyget
