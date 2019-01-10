@@ -10,8 +10,8 @@ För Z gäller:
 För X gäller:
   Felet i x är halva skilladen mellan vertikala planen x och x-.
   Korrgera x med att ändra HomingOffset[0] +-felet. Plus eller minus beror på hur skillnaden ser ut.
-  Om det fräsen har fräst för långt bort i x-led, ska minus användas. 
-  Om fräsen har fräst för nära i x-led, ska plus användas.
+  Om det fräsen har fräst för långt bort i x-led, ska minus användas. FAST TVÄRT OM 
+  Om fräsen har fräst för nära i x-led, ska plus användas. FAST TVÄRT OM
 
 Parametrar i json filen:
 ToolRadius, radien på fräsverktyget

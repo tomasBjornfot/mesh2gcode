@@ -35,32 +35,31 @@ def _getPlotData(gcodefile=''):
             z.append(float(d.split()[3][1:]))
     return [x, y, z]
 
-def _gcode_info(fname):
-    """
-    ready for testing
-    """
-    mess = ['file: '+fname]
+def gcode_info():
+    mess = []
+    # checks is gcode files produce error 202:
+    b_ok = gan.is_p2p_time_ok('cam/bottom.gc', 3.0*0.001)
+    d_ok = gan.is_p2p_time_ok('cam/deck.gc', 3.0*0.001)
+    if b_ok == False or d_ok == False:
+        mess.append('Warning: files can cause error: 202')
     p_bottom, f_bottom = gan.data_from_gcode('cam/bottom.gc')
     p_deck, f_deck = gan.data_from_gcode('cam/deck.gc')
     time_bottom = str(int(gan.milling_time(p_bottom, f_bottom)))
     time_deck = str(int(gan.milling_time(p_deck, f_deck)))
-    w = 2*int(np.max([p_bottom[:, 0], p_deck[:, 0]]))
-    l = int(np.max([p_bottom[:, 1], p_deck[:, 0]]))
-    h = 2*int(np.max([p_bottom[:, 2], p_deck[:, 2]]))
-
     mess.append('Milling time: '+time_bottom + '/' + time_deck+' minutes')
-    mess.append('Width: '+str(w)+' mm')
-    mess.append('Length: '+str(l)+' mm')
-    mess.append('Height: '+str(h)+' mm')
+    mess.append('Width: '+str(2*int(np.max(p_bottom[:, 0])))+' mm')
+    mess.append('Length: '+str(int(np.max(p_bottom[:, 1])))+' mm')
+    mess.append('Height: '+str(2*int(np.max(p_bottom[1:-1, 2])))+' mm')
     return mess
+
 """
 =============================
 ====  PUBLIC FUNCTIONS  ====
 =============================
 """
 
-dev_message = '' # Why is this value defined here? Remove?
-plotfile = '' # Only exist here! Remove?
+#dev_message = '' # Why is this value defined here? Remove?
+#plotfile = '' # Only exist here! Remove?
 
 @app.route('/', methods = ['GET','POST'])
 def index():
@@ -98,25 +97,9 @@ def stl():
         with open('settings.json', 'w') as f:
             f.write(json.dumps(data, indent=4, sort_keys=True))
         m2g.calculate()
-        mess = ['file: '+fname]
-        # checks is gcode files produce error 202:
-        b_ok = gan.is_p2p_time_ok('cam/bottom.gc', 3.0*0.001)
-        d_ok = gan.is_p2p_time_ok('cam/deck.gc', 3.0*0.001)
-        # The message in the info canvas
-        # TO DO: use _gcode_info instead
-        if b_ok == False or d_ok == False:
-            mess.append('Warning: files can cause error: 202')
-        p_bottom, f_bottom = gan.data_from_gcode('cam/bottom.gc')
-        p_deck, f_deck = gan.data_from_gcode('cam/deck.gc')
-        p_bottom, f_bottom = gan.data_from_gcode('cam/bottom_surface.gc')
-        p_deck, f_deck = gan.data_from_gcode('cam/deck_surface.gc')
-        time_bottom = str(int(gan.milling_time(p_bottom, f_bottom)))
-        time_deck = str(int(gan.milling_time(p_deck, f_deck)))
-        mess.append('Milling time: '+time_bottom + '/' + time_deck+' minutes')
-        mess.append('Width: '+str(2*int(np.max(p_bottom[:, 0])))+' mm')
-        mess.append('Length: '+str(int(np.max(p_bottom[:, 1])))+' mm')
-        mess.append('Height: '+str(2*int(np.max(p_bottom[1:-1, 2])))+' mm')
-
+        m2g.split_gcodefiles()
+        mess = ['File: '+fname]
+        mess = mess + gcode_info()
         bottom = _getPlotData('cam/bottom.gc')
         deck = _getPlotData('cam/deck.gc')
         return render_template('index_ver0.html', bottom=bottom, deck=deck, message=mess)
@@ -131,7 +114,7 @@ def tostart():
     Returns:
         ? : The HTML of the template
     """
-    mess = []
+    mess = gcode_info()
     bottom = _getPlotData('cam/bottom.gc')
     deck = _getPlotData('cam/deck.gc')
     try:
@@ -150,12 +133,11 @@ def homing():
     Returns:
         ? : The HTML of the template
     """
-    mess = []
+    mess = gcode_info()
     bottom = _getPlotData('cam/bottom.gc')
     deck = _getPlotData('cam/deck.gc')
     try:
         m.homing()
-        mess.append('At home position!')
     except Exception as e:
         mess.append(str(e))
     return render_template('index_ver0.html', bottom=bottom, deck=deck, message=mess)
@@ -169,7 +151,7 @@ def milldeck():
     Returns:
         ? : The HTML of the template
     """
-    mess = []
+    mess = gcode_info()
     try:
         mess.append(m.millDeck())
     except Exception as e:
@@ -185,7 +167,7 @@ def millbottom():
     Returns:
         ? : The HTML of the template
     """
-    mess = []
+    mess = gcode_info()
     try:
         mess.append(m.millBottom())
     except Exception as e:

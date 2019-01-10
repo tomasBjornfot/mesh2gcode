@@ -59,6 +59,47 @@ def merge_gcodefiles(path1, path2, path3):
         gcode = gcode1 + gcode2
         for line in gcode:
             f.write(line)
+def split_gcodefiles():
+    """
+    Splits bottom.gc and deck.gc files in two. Also, add a start and end point a z max. 
+    The second file (deck_part2.gc) starts one point before the first point ends. That
+    is becaue the milling can start smoother without cutting material. The function is
+    needed when milling with a small dust container that needs to be emptied in the middle
+    of the milling job. The files are split to give the user a break to remove the dust in 
+    the container.
+
+    Args:
+        None
+    Returns:
+        None
+    """
+    # gets the max z value
+    zmax = read_settings()['HomingOffset'][2]
+
+    for fname in ['cam/deck', 'cam/bottom']:
+        with open(fname+'.gc', 'r') as f:
+            lines = f.readlines()
+        split_index = len(lines)//2
+        split_lines = []
+        split_lines.append(lines[:split_index])
+        split_lines.append(lines[(split_index-1):])
+        
+        for i in range(2):
+            # makes an end point for first part
+            if i == 0:
+                end_line = split_lines[0][-1]
+                x = end_line.split(' ')
+                x_line = x[0]+' '+x[1]+' '+x[2]+' Z'+str(zmax)+' '+x[4] 
+                split_lines[0].append(x_line)
+            # make a start point for second part
+            if i == 1:
+                start_line = split_lines[1][0]
+                x = start_line.split(' ')
+                x_line = x[0]+' '+x[1]+' '+x[2]+' Z'+str(zmax)+' '+x[4] 
+                split_lines[1] = [x_line] + split_lines[1]
+            with open(fname+'_part'+str(i+1)+'.gc', 'w') as f:
+                for line in split_lines[i]:
+                    f.write(line)
 # --- from go program ---
 def read_jagged_matrix(path):
     """

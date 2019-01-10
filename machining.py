@@ -31,12 +31,19 @@ def _setGcodeValue(tg, config):
 
 def _readValue(tg, config):
     tg.write('{'+str(config)+':null}\n')
-    time.sleep(0.1)
-    reply = tg.readline().rstrip()
+    #time.sleep(0.1)
+    replies = tg.readlines()
+    for reply in replies:
+        dict_reply = json.loads(reply.rstrip())
+        if 'r' in dict_reply:
+            return dict_reply['r'][config]
+    """
     dict_reply = json.loads(reply)
+    print('dict_reply: ', dict_reply)
     value = dict_reply['r'][config]
     print('Reads value: "'+str(config)+'" as '+ str(value))
     return value
+    """
 
 def _move(tg, x, y, z, f):
     tg.write('{"gc":"g1 x+'+str(x)+' y'+str(y)+' z'+str(z)+' f'+str(f)+'"}\n')
@@ -250,7 +257,7 @@ def _millSide(side):
     _setGcodeValues(tg)
     _setGcodeMovesFromFile(tg, 'cam/'+side+'.gc')
     
-    # move to home position 
+    # move to home position (not homing)
     _setGcodeValue(tg,'M2')
     _move_z(tg, dz, frt)
     _disableAmaxLimitSwitch(tg)

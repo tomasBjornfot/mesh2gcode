@@ -1,5 +1,5 @@
 {
-    "BlockThickness": 100.0, 
+    "BlockThickness": 150.0, 
     "FeedrateHalfAngle": 25, 
     "FeedrateHalfDepth": 70, 
     "FeedrateMax": 1500, 
@@ -25,8 +25,8 @@
         2
     ], 
     "HomingOffset": [
-        -407.0, 
-        3100.0, 
+        -407, 
+        2730.0, 
         108.5
     ], 
     "StartPositionY": 1200, 
