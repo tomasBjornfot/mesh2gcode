@@ -23,7 +23,7 @@ def write_conf_to_file(filename):
         json.dump(mydict, f, sort_keys=True, indent=4, separators=(',', ': '))
 
 #--- MAIN ---#
-write_conf_to_file('test2.json')
+write_conf_to_file('grabo.json')
 """
 keys = get_keys()
 keys.sort()

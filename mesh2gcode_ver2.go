@@ -402,6 +402,10 @@ func even_spaced(x [1000]float64, y [1000]float64, no_cols int, space float64) (
 	point_index := 0
 	cs_x := make([]float64, 1000)
 	cs_y := make([]float64, 1000)
+	// adds the first point from cs to cs_x and cs_y
+	cs_x[point_index] = x[0]
+	cs_y[point_index] = y[0]
+	point_index++
 	// take the first point in cs as a starting point
 	cs_x[point_index] = x[0]
 	cs_y[point_index] = y[0]
