@@ -97,7 +97,9 @@ def stl():
         with open('settings.json', 'w') as f:
             f.write(json.dumps(data, indent=4, sort_keys=True))
         m2g.calculate()
-        m2g.split_gcodefiles()
+        m2g.split_gcodefiles(['cam/deck', 'cam/bottom'])
+        m2g.split_gcodefiles(['cam/deck_1', 'cam/bottom_1'])
+        m2g.split_gcodefiles(['cam/deck_2', 'cam/bottom_2'])
         mess = ['File: '+fname]
         mess = mess + gcode_info()
         bottom = _getPlotData('cam/bottom.gc')

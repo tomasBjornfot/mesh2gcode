@@ -1,25 +1,27 @@
 package main
 
 import (
-	"os"
-	"log"
-	"encoding/json"
-	"encoding/binary"
-	"fmt"
-	"math"
-	"strings"
-	"strconv"
 	"bytes"
+	"encoding/binary"
+	"encoding/json"
+	"fmt"
+	"log"
+	"math"
+	"os"
+	"strconv"
+	"strings"
 )
+
 /*
- * STRUCTS 
+ * STRUCTS
  */
 // Strukt för hantering av settings från settings.json filen
 type Settings struct {
-	ToolRadius          float64    `json:"ToolRadius"`
-	Xres            float64    `json:"Xres"`
-	Yres            float64    `json:"Yres"`
+	ToolRadius float64 `json:"ToolRadius"`
+	Xres       float64 `json:"Xres"`
+	Yres       float64 `json:"Yres"`
 }
+
 /*
  * STUCTS
  */
@@ -27,7 +29,7 @@ type Settings struct {
 type Mesh struct {
 	Triangles [][9]float64
 	Normals   [][3]float64
-    Profile   [][2]float64
+	Profile   [][2]float64
 	No_tri    int
 	X_min     float64
 	Y_min     float64
@@ -36,6 +38,7 @@ type Mesh struct {
 	Y_max     float64
 	Z_max     float64
 }
+
 // Holds the cross-section data.
 type CrossSection struct {
 	X       [][1000]float64
@@ -44,21 +47,23 @@ type CrossSection struct {
 	No_rows int
 	No_cols [1000]int
 }
+
 // Holds the millng data including points and normals.
 type Mill struct {
 	X       [][1000]float64
 	Y       [][1000]float64
 	Z       [][1000]float64
-	Xn       [][1000]float64
-	Yn       [][1000]float64
-	Zn       [][1000]float64
+	Xn      [][1000]float64
+	Yn      [][1000]float64
+	Zn      [][1000]float64
 	No_rows int
 	No_cols [1000]int
 }
+
 /*
  * PRIVATE FUNCTIONS/METHODS
  */
- // Calculates the mesh min and max values for all dimersions
+// Calculates the mesh min and max values for all dimersions
 func (mesh *Mesh) calculateMeshProperties() {
 	// tar reda på max och min i varje dimension
 	mesh.X_min, mesh.Y_min, mesh.Z_min = 100000.0, 100000.0, 100000.0
@@ -92,6 +97,7 @@ func (mesh *Mesh) calculateMeshProperties() {
 		}
 	}
 }
+
 // Calculates the mesh profile in the x,y projection
 func (mesh *Mesh) calculateProfile(radius float64, resolution int) {
 	// räknar ut Profilen på brädan i xy planet
@@ -147,7 +153,7 @@ func (mesh *Mesh) calculateProfile(radius float64, resolution int) {
 		if index[i] != -1 {
 			no_index++
 		}
-	}	
+	}
 	mesh.Profile = make([][2]float64, no_index)
 	pindex := int(0)
 	for i := 0; i < len(index); i++ {
@@ -158,6 +164,7 @@ func (mesh *Mesh) calculateProfile(radius float64, resolution int) {
 		}
 	}
 }
+
 // Calculates the mesh normals
 func (mesh *Mesh) calculateNormals() {
 	// räknar ut normaler för trianglar
@@ -174,6 +181,7 @@ func (mesh *Mesh) calculateNormals() {
 		mesh.Normals[i] = crossProduct(v0, v1)
 	}
 }
+
 // Calculates the cross productof two thee element vectors
 func crossProduct(v0 [3]float64, v1 [3]float64) [3]float64 {
 	var x [3]float64
@@ -186,6 +194,7 @@ func crossProduct(v0 [3]float64, v1 [3]float64) [3]float64 {
 	x[2] = x[2] / length
 	return x
 }
+
 // Calculates a linespace in the same manner as Python/Matlab
 func linspace(min float64, max float64, no_segments int) []float64 {
 	numbers := make([]float64, no_segments+1)
@@ -196,6 +205,7 @@ func linspace(min float64, max float64, no_segments int) []float64 {
 	}
 	return numbers
 }
+
 // Extracts the points from a set of triangles
 func trianglesToPoints(mesh Mesh) [][3]float64 {
 	// tar ut trianglarna från mesh och gör en x,3 matris av punkterna
@@ -216,6 +226,7 @@ func trianglesToPoints(mesh Mesh) [][3]float64 {
 	}
 	return points
 }
+
 // Calculates the  min value in an array
 func getMinValue(array []float64) int {
 	min_value := float64(1000000)
@@ -228,6 +239,7 @@ func getMinValue(array []float64) int {
 	}
 	return index
 }
+
 // Calculates the max value from an array
 func getMaxValue(array []float64) int {
 	max_value := float64(-1000000)
@@ -240,6 +252,7 @@ func getMaxValue(array []float64) int {
 	}
 	return index
 }
+
 // Gets the neasest neighbours in an array for a given value
 func getNearestNeighbours(x float64, x_array []float64) []int {
 	lower_diff := float64(100000)
@@ -269,25 +282,28 @@ func getNearestNeighbours(x float64, x_array []float64) []int {
 	index[1] = upper_index
 	return index
 }
+
 // Calculates a line of two points in 2D
 func twoPointsToLine(x0 float64, x1 float64, y0 float64, y1 float64) (float64, float64) {
 	k := (y1 - y0) / (x1 - x0)
 	m := y0 - k*x0
 	return k, m
 }
+
 // Calculates the y value on a 2D line given an x value
 func yValueAt(x float64, k float64, m float64) float64 {
 	return k*x + m
 }
+
 // Removes duplications in an array of lenth 1000
-func unique(x [1000]float64, y [1000]float64, test_length int) ([1000]float64, [1000]float64, int){
+func unique(x [1000]float64, y [1000]float64, test_length int) ([1000]float64, [1000]float64, int) {
 	// makes unique points with respect to the x value
 	// has a resolution of 2 decimals
 	remove := make([]int, 1000)
 	no_index := 0
-	for i:=0; i<test_length-1; i++ {
+	for i := 0; i < test_length-1; i++ {
 		cx := x[i]
-		for j:=i+1; j<test_length; j++ {	
+		for j := i + 1; j < test_length; j++ {
 			dx := cx - x[j]
 			if math.Round(100*dx) == 0 {
 				//fmt.Println("i:",i,"j:",j)
@@ -301,27 +317,28 @@ func unique(x [1000]float64, y [1000]float64, test_length int) ([1000]float64, [
 	u_y := make([]float64, 1000)
 	copy(u_x, x[:])
 	copy(u_y, y[:])
-	for i:=no_index-1; i>-1; i-- {
+	for i := no_index - 1; i > -1; i-- {
 		u_x = append(u_x[:remove[i]], u_x[remove[i]+1:]...)
 		u_y = append(u_y[:remove[i]], u_y[remove[i]+1:]...)
-	}	
+	}
 
 	var x_out [1000]float64
 	copy(x_out[:], u_x[:])
-	
+
 	var y_out [1000]float64
 	copy(y_out[:], u_y[:])
 	//fmt.Println("remove:",remove[:no_index])
 	//fmt.Println("test_length", test_length)
 	//fmt.Println("no_index", no_index)
-	return x_out, y_out, test_length - no_index 
+	return x_out, y_out, test_length - no_index
 }
+
 // finds the indecis that sorts an array of length 1000
 func sort_index(arr [1000]float64, no_cols int) []int {
 	get_min_index := func(arr []float64) int {
 		val := 100000.0
 		min_index := -1
-		for i:=0; i<len(arr); i++ {
+		for i := 0; i < len(arr); i++ {
 			if arr[i] < val {
 				val = arr[i]
 				min_index = i
@@ -329,27 +346,29 @@ func sort_index(arr [1000]float64, no_cols int) []int {
 		}
 		return min_index
 	}
-	
+
 	index := make([]int, no_cols)
 	arr_copy := make([]float64, no_cols)
 	copy(arr_copy, arr[:no_cols])
-	for i:=0; i<len(arr_copy); i++{
+	for i := 0; i < len(arr_copy); i++ {
 		index[i] = get_min_index(arr_copy)
 		arr_copy[index[i]] = 1000000.0
 	}
 	return index
 }
+
 // sorts an two array according to the x array
 func sort2darray(x [1000]float64, y [1000]float64, no_cols int) ([1000]float64, [1000]float64) {
 	index := sort_index(x, no_cols)
 	var x_out [1000]float64
 	var y_out [1000]float64
-	for i:=0; i<no_cols; i++ {
+	for i := 0; i < no_cols; i++ {
 		x_out[i] = x[index[i]]
 		y_out[i] = y[index[i]]
 	}
 	return x_out, y_out
 }
+
 // --- 2D line calculations ---
 // Calculates the distance  between two points
 func line_square_length(p0 [2]float64, p1 [2]float64) float64 {
@@ -357,45 +376,49 @@ func line_square_length(p0 [2]float64, p1 [2]float64) float64 {
 	dy := p0[1] - p1[1]
 	return dx*dx + dy*dy
 }
+
 // Calculates the inclination of an line defined by two points
 func line_k(p0 [2]float64, p1 [2]float64) float64 {
 	dx := p1[0] - p0[0]
 	dy := p1[1] - p0[1]
-	k := dy/dx
-	if dx +dy < 0.1 {
+	k := dy / dx
+	if dx+dy < 0.1 {
 		return 0
 	}
 	return k
 }
+
 // Calculates the m value of a line defined by two points
 func line_m(p0 [2]float64, p1 [2]float64) float64 {
 	k := line_k(p0, p1)
 	return p0[1] - k*p0[0]
 }
-// Calculates next point on the same line with square distance (r2) from another 
+
+// Calculates next point on the same line with square distance (r2) from another
 // point (p_left)
 func calc_next(p_left [2]float64, r2 float64, k float64, m float64) [2]float64 {
-	dx := math.Sqrt(r2/(1+k*k))
-	p_new := [2]float64 {0.0, 0.0}
+	dx := math.Sqrt(r2 / (1 + k*k))
+	p_new := [2]float64{0.0, 0.0}
 	p_new[0] = p_left[0] + dx
 	p_new[1] = k*p_new[0] + m
 	return p_new
 }
-// Calculates an even cartedian spaced set of points on a C0 line defined by x, y 
+
+// Calculates an even cartedian spaced set of points on a C0 line defined by x, y
 func even_spaced(x [1000]float64, y [1000]float64, no_cols int, space float64) ([]float64, []float64) {
 	d2 := make([]float64, no_cols)
 	k := make([]float64, no_cols)
 	m := make([]float64, no_cols)
 	d2_left := 0.0
 	var p0, p1, p_start, p_end, p_last, new_point [2]float64
-	for i:=0; i<no_cols; i++ {
-		p0[0] = x[i] 
+	for i := 0; i < no_cols; i++ {
+		p0[0] = x[i]
 		p0[1] = y[i]
 		p1[0] = x[i+1]
 		p1[1] = y[i+1]
 		d2[i] = line_square_length(p0, p1)
 		k[i] = line_k(p0, p1)
-		m[i] = line_m(p0, p1)	
+		m[i] = line_m(p0, p1)
 	}
 	//
 	line_index := 0
@@ -409,16 +432,16 @@ func even_spaced(x [1000]float64, y [1000]float64, no_cols int, space float64) (
 	// take the first point in cs as a starting point
 	cs_x[point_index] = x[0]
 	cs_y[point_index] = y[0]
-	for i:=0; i<100; i++ {
+	for i := 0; i < 100; i++ {
 		//fmt.Println("i:",i)
 		//check if new point pass the center line (x=0)
 		if cs_x[point_index] > 0 {
 			cs_x[point_index] = 0
 			//cs_y[point_index] =  m[line_index]
-			cs_y[point_index] =  cs_y[point_index - 1] 
+			cs_y[point_index] = cs_y[point_index-1]
 			break
 		}
-		space2 := space*space
+		space2 := space * space
 		// calculating the square distance from the previous point ...
 		// to the end of the line that it belongs to (d2_left)
 		p_end[0] = x[line_index+1]
@@ -428,7 +451,7 @@ func even_spaced(x [1000]float64, y [1000]float64, no_cols int, space float64) (
 		d2_left = line_square_length(p_last, p_end)
 		if space2 < d2_left {
 			//... then the next point should be in this line
-			// finds the point where the distance is space2 
+			// finds the point where the distance is space2
 			// from the last point to the new point
 			p_start[0] = cs_x[point_index]
 			p_start[1] = cs_y[point_index]
@@ -437,18 +460,18 @@ func even_spaced(x [1000]float64, y [1000]float64, no_cols int, space float64) (
 			cs_x[point_index] = new_point[0]
 			cs_y[point_index] = new_point[1]
 			/*
-			fmt.Println("p_start", p_start)
-			fmt.Println("space2", space2)
-			fmt.Println("k[line_index]", k[line_index])
-			fmt.Println("m[line_index]", m[line_index])
-			fmt.Println("point index:", point_index)
-			fmt.Println("cs_x[point_index]:",cs_x[point_index])
-			fmt.Println("cs_y[point_index]:",cs_y[point_index])
-			*/		
+				fmt.Println("p_start", p_start)
+				fmt.Println("space2", space2)
+				fmt.Println("k[line_index]", k[line_index])
+				fmt.Println("m[line_index]", m[line_index])
+				fmt.Println("point index:", point_index)
+				fmt.Println("cs_x[point_index]:",cs_x[point_index])
+				fmt.Println("cs_y[point_index]:",cs_y[point_index])
+			*/
 		} else {
 			for {
 				// new space2 when looking at the next line...
-				space2 = (math.Sqrt(space2) - math.Sqrt(d2_left))*(math.Sqrt(space2) - math.Sqrt(d2_left))
+				space2 = (math.Sqrt(space2) - math.Sqrt(d2_left)) * (math.Sqrt(space2) - math.Sqrt(d2_left))
 				// move index to next line
 				line_index = line_index + 1
 				// move to next line distance. Note that d2_left is the whole
@@ -456,38 +479,39 @@ func even_spaced(x [1000]float64, y [1000]float64, no_cols int, space float64) (
 				d2_left = d2[line_index]
 				if space2 < d2_left {
 					// ... then the next point should be in this line
-					// finds the point where the distance is space2 
+					// finds the point where the distance is space2
 					p_start[0] = x[line_index]
 					p_start[1] = y[line_index]
-					
+
 					new_point = calc_next(p_start, space2, k[line_index], m[line_index])
 					point_index++
 					cs_x[point_index] = new_point[0]
 					cs_y[point_index] = new_point[1]
 					/*
-					fmt.Println("Next line")
-					fmt.Println("p_start", p_start)
-					fmt.Println("space2", space2)
-					fmt.Println("k[line_index]", k[line_index])
-					fmt.Println("m[line_index]", m[line_index])
-					fmt.Println("point index:", point_index)
-					fmt.Println("cs_x[point_index]:",cs_x[point_index])
-					fmt.Println("cs_y[point_index]:",cs_y[point_index])
+						fmt.Println("Next line")
+						fmt.Println("p_start", p_start)
+						fmt.Println("space2", space2)
+						fmt.Println("k[line_index]", k[line_index])
+						fmt.Println("m[line_index]", m[line_index])
+						fmt.Println("point index:", point_index)
+						fmt.Println("cs_x[point_index]:",cs_x[point_index])
+						fmt.Println("cs_y[point_index]:",cs_y[point_index])
 					*/
 					break
 				}
 			}
 		}
-			
+
 	}
-	cs_x_out := cs_x[:(point_index+1)] 
-	cs_y_out := cs_y[:(point_index+1)] 
+	cs_x_out := cs_x[:(point_index + 1)]
+	cs_y_out := cs_y[:(point_index + 1)]
 	return cs_x_out, cs_y_out
 }
+
 /*
  * PUBLIC FUNCTIONS/METHODS
  */
- // Reads a stl file and convert it to a mesh
+// Reads a stl file and convert it to a mesh
 func (mesh *Mesh) Read(path string, filetype int) {
 	// läser in en STL fil till mesh
 	file, err := os.Open(path)
@@ -552,6 +576,7 @@ func (mesh *Mesh) Read(path string, filetype int) {
 	}
 	mesh.calculateProfile(50.0, 100)
 }
+
 // Writes a mesh to an STL file
 func (mesh *Mesh) Write(path string) {
 	// skriver en mesh till binär STL fil
@@ -578,6 +603,7 @@ func (mesh *Mesh) Write(path string) {
 	}
 	buf.WriteTo(file)
 }
+
 // Moves a mesh to origin with respect to center of mass
 func (mesh *Mesh) MoveToCenter() {
 	// flyttar en mesh till centrum
@@ -602,6 +628,7 @@ func (mesh *Mesh) MoveToCenter() {
 	fmt.Println("MovetoCenter, translation vector: ", vector)
 	mesh.Translate(vector)
 }
+
 // Moves a mesh to origin with respect to min and max values
 func (mesh *Mesh) MoveToCenter2() {
 	// flyttar till centrum map högsta och minsta värde
@@ -640,6 +667,7 @@ func (mesh *Mesh) MoveToCenter2() {
 	fmt.Println("MovetoCenter2, translation vector: ", vector)
 	mesh.Translate(vector)
 }
+
 // Translates a mesh to a point in space
 func (mesh *Mesh) Translate(vector [3]float64) {
 	// translaterar en mesh i rymden
@@ -655,6 +683,7 @@ func (mesh *Mesh) Translate(vector [3]float64) {
 		}
 	}
 }
+
 // Rotates a mesh in space around the x, y or z axis
 func (mesh *Mesh) Rotate(axis string, angle_degrees float64) {
 	// roterar en mesh i rymden
@@ -685,6 +714,7 @@ func (mesh *Mesh) Rotate(axis string, angle_degrees float64) {
 	}
 	mesh.calculateNormals()
 }
+
 // Aligns a mesh according to cadtype and machine
 func (mesh *Mesh) AlignMesh(cadtype string) {
 	// gör en alignment beroende på vilkan cad som används
@@ -695,6 +725,7 @@ func (mesh *Mesh) AlignMesh(cadtype string) {
 	}
 	mesh.calculateNormals()
 }
+
 // Align a mesh by rotation about X axis to minimize the height (z)
 func (mesh *Mesh) AlignMeshX() {
 	// roterar brädan runt x vectorn tills man hittar ett minimum Z_max - Z_min
@@ -713,6 +744,7 @@ func (mesh *Mesh) AlignMeshX() {
 	}
 	mesh = rmesh
 }
+
 // Split the mesh to a deck and bottom mesh
 func (mesh *Mesh) Split() (*Mesh, *Mesh) {
 	// delar upp deck och bottom på brädan
@@ -755,6 +787,7 @@ func (mesh *Mesh) Split() (*Mesh, *Mesh) {
 	bottom.calculateProfile(50.0, 100)
 	return deck, bottom
 }
+
 // Calculates the y-values for the "to be" cross-sections from the mesh
 func (mesh *Mesh) CalculateCS_Y_Values(max_distance float64, resolution float64) []float64 {
 	// Räknar ut y värden som ska navändas som cross sections
@@ -816,6 +849,7 @@ func (mesh *Mesh) CalculateCS_Y_Values(max_distance float64, resolution float64)
 	}
 	return cs_x_final
 }
+
 // Calculates the cross-sections of the mesh. Only used in CalculateCrossSections
 func (crossSection *CrossSection) MeshToCs(cs []float64, mesh *Mesh) {
 	// return variabler
@@ -889,10 +923,10 @@ func (crossSection *CrossSection) MeshToCs(cs []float64, mesh *Mesh) {
 			}
 		}
 		no_cols[i] = index
-		x[i], z[i], no_cols[i] = unique(x[i],z[i], index)
+		x[i], z[i], no_cols[i] = unique(x[i], z[i], index)
 		x[i], z[i] = sort2darray(x[i], z[i], no_cols[i])
-		
-	}	
+
+	}
 	crossSection.No_cols = no_cols
 	crossSection.No_rows = len(cs)
 	crossSection.X = x
@@ -905,13 +939,15 @@ func (crossSection *CrossSection) MeshToCs(cs []float64, mesh *Mesh) {
 	}
 	crossSection.Y = y
 }
+
 // Calculates the cross-section
 func (mesh *Mesh) CalculateCrossSections(y_res float64, m_res float64) *CrossSection {
 	cs := mesh.CalculateCS_Y_Values(y_res, m_res)
 	cs_mesh := new(CrossSection)
-    cs_mesh.MeshToCs(cs, mesh)
-    return cs_mesh
+	cs_mesh.MeshToCs(cs, mesh)
+	return cs_mesh
 }
+
 // Calculates the mill normals
 func (mill *Mill) CalculateMillNormals() {
 	// bekrivning!
@@ -921,7 +957,7 @@ func (mill *Mill) CalculateMillNormals() {
 	var v0 [3]float64
 	var v1 [3]float64
 	var n [3]float64
-	
+
 	// räknar ut max no_cols
 	max_no_cols := 0
 	for nc := range mill.No_cols {
@@ -929,7 +965,7 @@ func (mill *Mill) CalculateMillNormals() {
 			max_no_cols = nc
 		}
 	}
-	
+
 	// beräknar alla utom kanterna
 	for i := 1; i < mill.No_rows-1; i++ {
 		for j := 1; j < max_no_cols-1; j++ {
@@ -974,23 +1010,24 @@ func (mill *Mill) CalculateMillNormals() {
 	mill.Yn = ny
 	mill.Zn = nz
 }
+
 // Calculates the mill coordinates/points
 func (mill *Mill) CalculateMillCoordinates(cs *CrossSection, settings *Settings) {
-	
+
 	mill.X = make([][1000]float64, cs.No_rows)
 	mill.Y = make([][1000]float64, cs.No_rows)
 	mill.Z = make([][1000]float64, cs.No_rows)
-	
+
 	//fmt.Println("cs.X:",cs.X[1])
 	//fmt.Println("cs.Z:",cs.Z[1])
 	//even_spaced(cs.X[1], cs.Z[1], cs.No_cols[1], 4.0)
-	
+
 	mill.No_rows = cs.No_rows
-	for i:=0; i<cs.No_rows; i++ {
+	for i := 0; i < cs.No_rows; i++ {
 		cs_x, cs_z := even_spaced(cs.X[i], cs.Z[i], cs.No_cols[i], settings.Xres)
-		for j:=0; j<1000; j++ {
+		for j := 0; j < 1000; j++ {
 			mill.Y[i][j] = cs.Y[i][0]
-			if j<len(cs_x) {
+			if j < len(cs_x) {
 				mill.X[i][j] = cs_x[j]
 				mill.Z[i][j] = cs_z[j]
 			} else {
@@ -999,8 +1036,9 @@ func (mill *Mill) CalculateMillCoordinates(cs *CrossSection, settings *Settings)
 			}
 		}
 		mill.No_cols[i] = len(cs_x)
-	}	
+	}
 }
+
 /*
  * EXTRAS
  */
@@ -1057,17 +1095,17 @@ func (mesh *Mesh) WriteProfileToFile(path string) {
 		file.WriteString(s)
 	}
 }
-func (cs *CrossSection) WriteCrossSectionToFile(path string , cs_index int) {
+func (cs *CrossSection) WriteCrossSectionToFile(path string, cs_index int) {
 	write_float := func(value float64) string {
 		return strconv.FormatFloat(value, 'f', 2, 64)
 	}
-	
+
 	file, err := os.Create(path)
 	defer file.Close()
 	if err != nil {
 		fmt.Println("WriteCrossSectionToFile: Something went wrong!!!")
 	}
-	for i := range(cs.X[cs_index][:cs.No_cols[cs_index]]) {
+	for i := range cs.X[cs_index][:cs.No_cols[cs_index]] {
 		s_x := write_float(cs.X[cs_index][i])
 		s_z := write_float(cs.Z[cs_index][i])
 		s := s_x + " " + s_z + "\n"
@@ -1145,6 +1183,7 @@ func (mill *Mill) WriteXYZToFile(path string, mattype string) {
 		file.WriteString(s_row)
 	}
 }
+
 /*
  * JSON FUNCTIONS
  */
@@ -1164,6 +1203,7 @@ func read_settings(dir string) *Settings {
 	json.Unmarshal(bytes, &s)
 	return s
 }
+
 /*
  * FUNCTIONS AND METHODS
  */
@@ -1177,17 +1217,19 @@ func prepare_stl(path string) (*Mesh, *Mesh) {
 	board.AlignMesh("boardcad")
 	board.AlignMeshX()
 	board.MoveToCenter2()
+	board.Write("out/board.stl")
 	deck, bottom := board.Split()
 	bottom.Rotate("y", 180.0)
 	return deck, bottom
 }
 func (mill *Mill) export_to_python(dir string, name string) {
-    dir = dir+"/"
-    mill.WriteXYZToFile(dir+name+"_zn.txt", "zn")
+	dir = dir + "/"
+	mill.WriteXYZToFile(dir+name+"_zn.txt", "zn")
 	mill.WriteXYZToFile(dir+name+"_mx.txt", "x")
-    mill.WriteXYZToFile(dir+name+"_my.txt", "y")
-    mill.WriteXYZToFile(dir+name+"_mz.txt", "z")
+	mill.WriteXYZToFile(dir+name+"_my.txt", "y")
+	mill.WriteXYZToFile(dir+name+"_mz.txt", "z")
 }
+
 /*
  * MAIN FUNCTION
  */
@@ -1196,41 +1238,41 @@ func main() {
 	// reads the settings from JSON file
 	settings := read_settings("settings.json")
 	// prepare the STL files
-    stlfile := os.Args[1]
+	stlfile := os.Args[1]
 	deck, bottom := prepare_stl(stlfile)
 	// calculating the cross sections
-    cs_deck := deck.CalculateCrossSections(settings.Yres, 1.0)
-    cs_bottom := bottom.CalculateCrossSections(settings.Yres, 1.0)
-    tr := settings.ToolRadius
-    // --- CALCULATING THE DECK ---
-    // calculating the mill coordinates and normals
-    mdeck := new(Mill)
-    mdeck.CalculateMillCoordinates(cs_deck, settings)
-    mdeck.CalculateMillNormals()
-    // making mill coordinates as center of the milling tool
-    for row:=0; row<mdeck.No_rows; row++ {
-		for col:=0; col<mdeck.No_cols[row]; col++ {
-			mdeck.X[row][col] += tr*mdeck.Xn[row][col] 
-			mdeck.Y[row][col] += tr*mdeck.Yn[row][col] 
-			mdeck.Z[row][col] += tr*mdeck.Zn[row][col]
+	cs_deck := deck.CalculateCrossSections(settings.Yres, 1.0)
+	cs_bottom := bottom.CalculateCrossSections(settings.Yres, 1.0)
+	tr := settings.ToolRadius
+	// --- CALCULATING THE DECK ---
+	// calculating the mill coordinates and normals
+	mdeck := new(Mill)
+	mdeck.CalculateMillCoordinates(cs_deck, settings)
+	mdeck.CalculateMillNormals()
+	// making mill coordinates as center of the milling tool
+	for row := 0; row < mdeck.No_rows; row++ {
+		for col := 0; col < mdeck.No_cols[row]; col++ {
+			mdeck.X[row][col] += tr * mdeck.Xn[row][col]
+			mdeck.Y[row][col] += tr * mdeck.Yn[row][col]
+			mdeck.Z[row][col] += tr * mdeck.Zn[row][col]
 		}
 	}
-    // --- CALCULATING THE BOTTOM ---
-    // calculating the mill coordinates and normals
-    mbottom := new(Mill)
-    mbottom.CalculateMillCoordinates(cs_bottom, settings)
-    mbottom.CalculateMillNormals()
-    // making mill coordinates as center of the milling tool
-    for row:=0; row<mbottom.No_rows; row++ {
-		for col:=0; col<mbottom.No_cols[row]; col++ {
-			mbottom.X[row][col] += tr*mbottom.Xn[row][col] 
-			mbottom.Y[row][col] += tr*mbottom.Yn[row][col] 
-			mbottom.Z[row][col] += tr*mbottom.Zn[row][col]
+	// --- CALCULATING THE BOTTOM ---
+	// calculating the mill coordinates and normals
+	mbottom := new(Mill)
+	mbottom.CalculateMillCoordinates(cs_bottom, settings)
+	mbottom.CalculateMillNormals()
+	// making mill coordinates as center of the milling tool
+	for row := 0; row < mbottom.No_rows; row++ {
+		for col := 0; col < mbottom.No_cols[row]; col++ {
+			mbottom.X[row][col] += tr * mbottom.Xn[row][col]
+			mbottom.Y[row][col] += tr * mbottom.Yn[row][col]
+			mbottom.Z[row][col] += tr * mbottom.Zn[row][col]
 		}
 	}
-    
-    // export to python
-    mdeck.export_to_python("out", "deck")
-    mbottom.export_to_python("out", "bottom")
-    fmt.Println("done...")
+
+	// export to python
+	mdeck.export_to_python("out", "deck")
+	mbottom.export_to_python("out", "bottom")
+	fmt.Println("done...")
 }

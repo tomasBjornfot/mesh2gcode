@@ -59,7 +59,7 @@ def merge_gcodefiles(path1, path2, path3):
         gcode = gcode1 + gcode2
         for line in gcode:
             f.write(line)
-def split_gcodefiles():
+def split_gcodefiles(myfiles):
     """
     Splits bottom.gc and deck.gc files in two. Also, add a start and end point a z max. 
     The second file (deck_part2.gc) starts one point before the first point ends. That
@@ -76,7 +76,7 @@ def split_gcodefiles():
     # gets the max z value
     zmax = read_settings()['HomingOffset'][2]
 
-    for fname in ['cam/deck', 'cam/bottom']:
+    for fname in myfiles:
         with open(fname+'.gc', 'r') as f:
             lines = f.readlines()
         split_index = len(lines)//2
@@ -97,7 +97,7 @@ def split_gcodefiles():
                 x = start_line.split(' ')
                 x_line = x[0]+' '+x[1]+' '+x[2]+' Z'+str(zmax)+' '+x[4] 
                 split_lines[1] = [x_line] + split_lines[1]
-            with open(fname+'_part'+str(i+1)+'.gc', 'w') as f:
+            with open(fname+'_'+str(i+1)+'.gc', 'w') as f:
                 for line in split_lines[i]:
                     f.write(line)
 # --- from go program ---
@@ -321,6 +321,14 @@ def make_milling_points(mx, my, mz, feed):
     fr = list(reversed(fr))
     points = np.array([gx, gy, gz]).T
     return points, np.array(fr)
+def get_y_offset():
+    """
+    gets the min values in y direction for both deck and bottom
+    """
+    mxd, myd, mzd, mznd = read_matrices('deck')
+    mxb, myb, mzb, mznb = read_matrices('bottom')
+    return np.min([np.min(myb), np.min(myd)])
+
 def calc(side):
     """
     Calculates the gcode for a blank side
@@ -347,9 +355,10 @@ def calc(side):
     points, feed = make_milling_points(mx, my, mz, mf)
     points, feed  = add_start_point(points, feed, s['HomingOffset'][2], 1500)
     points, feed  = add_end_point(points, feed, s['HomingOffset'][2], 1500)
-    y_offset = np.min(points[:, 1])
+    # offset the y dim
+    y_offset = get_y_offset()
+    points[:, 1] -= y_offset # ta in en parameter
     # write stuff
-    points[:, 1] -= y_offset
     points_to_gcode(points, feed, 'cam/'+side+'_surface.gc')
     write_jagged_matrix(dz_angle, 'out/'+side+'_dz_angle.txt')
     write_jagged_matrix(dz_height, 'out/'+side+'_dz_height.txt')
@@ -380,4 +389,4 @@ def calculate():
     calc('deck')
     calc('bottom')
 # --- MAIN --- #	
-calculate()
+#calculate()
