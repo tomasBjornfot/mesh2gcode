@@ -327,7 +327,7 @@ def get_y_offset():
     """
     mxd, myd, mzd, mznd = read_matrices('deck')
     mxb, myb, mzb, mznb = read_matrices('bottom')
-    return np.min([np.min(myb), np.min(myd)])
+    return np.min(np.min(myb)+np.min(myd))
 
 def calc(side):
     """

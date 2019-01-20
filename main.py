@@ -46,7 +46,10 @@ def gcode_info():
     p_deck, f_deck = gan.data_from_gcode('cam/deck.gc')
     time_bottom = str(int(gan.milling_time(p_bottom, f_bottom)))
     time_deck = str(int(gan.milling_time(p_deck, f_deck)))
+    p_bottom, f_bottom = gan.data_from_gcode('cam/bottom_surface.gc')
+    p_deck, f_deck = gan.data_from_gcode('cam/deck_surface.gc')
     mess.append('Milling time: '+time_bottom + '/' + time_deck+' minutes')
+    # THIS IS WRONG!!!! calculate from STL instead!!!!!!
     mess.append('Width: '+str(2*int(np.max(p_bottom[:, 0])))+' mm')
     mess.append('Length: '+str(int(np.max(p_bottom[:, 1])))+' mm')
     mess.append('Height: '+str(2*int(np.max(p_bottom[1:-1, 2])))+' mm')
